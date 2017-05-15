@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +16,9 @@ import android.widget.EditText;
 
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.util.LogUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by XTH on 2017/5/12.
@@ -29,6 +34,9 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private Button voiceButton;//语音按钮
     private Button sendButton;//发送按钮
     private EditText textEdit;//文字编辑
+    private RecyclerView recyclerView;
+    private MsgAdapter msgAdapter;
+    private List<MSG> msgList = new ArrayList<>();
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -101,6 +109,11 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         voiceButton = (Button) findViewById(R.id.voice_button);
         sendButton = (Button) findViewById(R.id.send_button);
         textEdit = (EditText) findViewById(R.id.text_edit);
+        recyclerView = (RecyclerView) findViewById(R.id.dialogue_layout_recyclerview);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        msgAdapter = new MsgAdapter(msgList);
+        recyclerView.setAdapter(msgAdapter);
 
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加导航栏
@@ -134,6 +147,14 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.send_button:
                 //发送按钮，文字编辑时发送按钮显示
+                String content = textEdit.getText().toString();
+                if(!"".equals(content)){
+                    MSG msg = new MSG(content, MSG.TYPE_SENT);
+                    msgList.add(msg);
+                    msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
+                    recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+                    textEdit.setText("");
+                }
                 break;
             default:
                 break;

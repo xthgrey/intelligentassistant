@@ -7,5 +7,8 @@
     <color name="send_button_color">#54FF9F</color>
     <color name="dialogue_layout_recyclerview_color">#DDD</color>
 
+    <color name="dialogue_layout_left_msg_color">#FFF</color>
+    <color name="dialogue_layout_right_msg_color">#000</color>
+
 
 </resources>

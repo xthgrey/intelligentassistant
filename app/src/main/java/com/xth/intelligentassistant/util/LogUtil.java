@@ -6,7 +6,7 @@ import android.util.Log;
  * Created by XTH on 2017/5/5.
  * 获取类型：this.getLocalClassName()
  * 获取方法名：new Throwable().getStackTrace()[0].getMethodName()
- * LogUtil.d(this.getLocalClassName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
+ * LogUtil.d(getClass().getName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
  * LogUtil.d(getComponentName()+"---"+new Throwable().getStackTrace()[0].getMethodName() + " : " );
  */
 
