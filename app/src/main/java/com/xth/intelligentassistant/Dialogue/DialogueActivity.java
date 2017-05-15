@@ -1,5 +1,7 @@
 package com.xth.intelligentassistant.Dialogue;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,8 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,7 +28,7 @@ import java.util.List;
  * Created by XTH on 2017/5/12.
  */
 
-public class DialogueActivity extends AppCompatActivity implements View.OnClickListener,View.OnLongClickListener {
+public class DialogueActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
     private Boolean voice_sex_flag;//false:女的，true：男的
     private Boolean text_voice_flag;//false:Text显示语音图标,true:voice显示文字图标
@@ -37,6 +41,8 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private RecyclerView recyclerView;
     private MsgAdapter msgAdapter;
     private List<MSG> msgList = new ArrayList<>();
+
+    private Dialog dialog;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -110,6 +116,11 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         sendButton = (Button) findViewById(R.id.send_button);
         textEdit = (EditText) findViewById(R.id.text_edit);
         recyclerView = (RecyclerView) findViewById(R.id.dialogue_layout_recyclerview);
+        dialog = new Dialog(this, R.style.dialog);
+
+        View view = LayoutInflater.from(this).inflate(R.layout.voice_image_layout, null);
+        dialog.setContentView(view);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         msgAdapter = new MsgAdapter(msgList);
@@ -124,11 +135,10 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         }
         //设置 textVoiceButton 监听
         textVoiceChooseButton.setOnClickListener(this);
-        voiceButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        //设置 voiceButton 长按监听
-        voiceButton.setOnLongClickListener(this);
+        //设置 voiceButton 触摸监听
+        voiceButton.setOnTouchListener(this);
     }
 
     @Override
@@ -142,13 +152,10 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 editor.apply();//保存提交
                 textVoiceChooseButtonDeal();
                 break;
-            case R.id.voice_button:
-                //声音按钮，长按发送声音，这里是点击
-                break;
             case R.id.send_button:
                 //发送按钮，文字编辑时发送按钮显示
                 String content = textEdit.getText().toString();
-                if(!"".equals(content)){
+                if (!"".equals(content)) {
                     MSG msg = new MSG(content, MSG.TYPE_SENT);
                     msgList.add(msg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
@@ -161,14 +168,21 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+
     @Override
-    public boolean onLongClick(View v) {
-        switch (v.getId()){
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (v.getId()) {
             case R.id.voice_button:
-                LogUtil.d("voice_button正在长按");
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    LogUtil.d("voice_button松开");
+                    dialog.dismiss();
+                } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    LogUtil.d("voice_button按下");
+                    dialog.show();
+                }
                 break;
         }
-        return false;
+        return true;
     }
 
     /**

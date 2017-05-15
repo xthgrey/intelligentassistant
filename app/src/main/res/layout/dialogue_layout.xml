@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/dialogue_layout_toolbar"
@@ -28,37 +28,42 @@
 
     </android.support.v7.widget.RecyclerView>
 
+
+
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <Button
-            android:layout_margin="5sp"
             android:id="@+id/text_voice_choose_button"
             android:layout_width="35sp"
-            android:layout_height="35sp" />
+            android:layout_height="35sp"
+            android:layout_margin="5sp" />
+
         <EditText
             android:id="@+id/text_edit"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_margin="5sp"
-            android:maxLines="10"/>
+            android:layout_weight="1"
+            android:maxLines="10" />
+
         <Button
             android:id="@+id/voice_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_margin="5sp"
-            android:text="@string/voice_button_text"/>
+            android:layout_weight="1"
+            android:text="@string/voice_button_text" />
+
         <Button
             android:id="@+id/send_button"
             android:layout_width="50sp"
             android:layout_height="35sp"
             android:layout_margin="5sp"
-            android:text="@string/send_button_text"
-            android:background="@color/send_button_color"/>
+            android:background="@color/send_button_color"
+            android:text="@string/send_button_text" />
 
     </LinearLayout>
 
