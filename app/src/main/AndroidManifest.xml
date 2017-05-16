@@ -2,13 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xth.intelligentassistant">
 
+    <!--允许程序录制声音通过手机或耳机的麦克-->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!--允许程序访问网络连接，可能产生GPRS流量-->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--允许程序获取网络信息状态，如当前的网络连接是否有效-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--允许程序获取当前WiFi接入的状态以及WLAN热点的信息-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!--允许程序改变WiFi状态-->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <!--允许程序访问电话状态-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!--允许程序写入外部存储,如SD卡上写文件-->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!--<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
+    <!--允许程序读取或写入系统设置-->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <!--允许程序修改声音设置信息-->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
         android:allowBackup="true"
@@ -21,18 +34,6 @@
         <meta-data android:name="com.baidu.speech.API_KEY" android:value="VsCpOUtv6vquaw5ZMKhLLZAs"/>
         <meta-data android:name="com.baidu.speech.SECRET_KEY" android:value="15004d92543351f67bf6873f9ec907ea"/>
         <service android:name="com.baidu.speech.VoiceRecognitionService" android:exported="false" />
-
-        <!--<activity
-            android:name="com.baidu.voicerecognition.android.ui.BaiduASRDigitalDialog"
-            android:configChanges="orientation|keyboardHidden|screenLayout"
-            android:theme="@android:style/Theme.Dialog"
-            android:exported="false"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="com.baidu.action.RECOGNIZE_SPEECH" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>-->
 
         <activity android:name=".MainActivity">
 

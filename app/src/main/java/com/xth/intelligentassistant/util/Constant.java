@@ -35,4 +35,9 @@ public class Constant {
 
     public static final String VAD_SEARCH = "search";
     public static final String VAD_INPUT = "input";
+    public static final String GENERALGIRL = "欢迎使用智能助手普通女声";
+    public static final String GENERALBOY = "欢迎使用智能助手普通男声";
+    public static final String SPECIALBOY = "欢迎使用智能助手特别男声";
+    public static final String EMOTIONBOY = "欢迎使用智能助手情感男声";
+    public static final String EMOTIONCHILD = "欢迎使用智能助手情感儿童声";
 }

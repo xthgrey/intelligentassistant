@@ -24,6 +24,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.baidu.speech.VoiceRecognitionService;
+import com.baidu.tts.auth.AuthInfo;
+import com.baidu.tts.client.SpeechError;
+import com.baidu.tts.client.SpeechSynthesizer;
+import com.baidu.tts.client.SpeechSynthesizerListener;
+import com.baidu.tts.client.TtsMode;
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
@@ -40,9 +45,9 @@ import java.util.List;
  * Created by XTH on 2017/5/12.
  */
 
-public class DialogueActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener, RecognitionListener {
+public class DialogueActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener, RecognitionListener, SpeechSynthesizerListener {
 
-    private Boolean voice_sex_flag;//false:女的，true：男的
+    private String voiceSelect;//0:普通女生，1：普通男生，2：特别男生，3：情感男生<度逍遥>，4：情感儿童声<度丫丫>
     private Boolean text_voice_flag;//false:Text显示语音图标,true:voice显示文字图标
 
     private Toolbar toolBar;//标题栏
@@ -50,29 +55,23 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private Button voiceButton;//语音按钮
     private Button sendButton;//发送按钮
     private EditText textEdit;//文字编辑
-    private ImageView imageWave;
+    private ImageView imageWave;//对话框中的波形界面
     private RecyclerView recyclerView;
     private MsgAdapter msgAdapter;
     private List<MSG> msgList = new ArrayList<>();
-
+    private MSG receivedMsg;
+    private MSG sendMsg;
+    //语音识别对话框
     private Dialog dialog;
-
+    //语音识别器
     private SpeechRecognizer speechRecognizer;
-
+    // 语音合成客户端
+    private SpeechSynthesizer mSpeechSynthesizer;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
         getMenuInflater().inflate(R.menu.dialogue_layout_toolbar, menu);//动态创建Toolbar中的菜单
-
-        //判断ToolBar中的“声音选择”项，判断男女
-        MenuItem menuItem = menu.findItem(R.id.voice_sex);
-        if (voice_sex_flag) {
-            menuItem.setIcon(R.drawable.dialogue_layout_boy);
-        } else {
-            menuItem.setIcon(R.drawable.dialogue_layout_girl);
-        }
-
         return true;
     }
 
@@ -80,19 +79,40 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     public boolean onOptionsItemSelected(MenuItem item) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
         switch (item.getItemId()) {
-            case R.id.voice_sex:
-                /**
-                 * 声音选择逻辑，后期可供用户选择不同的声音
-                 */
-                voice_sex_flag = !voice_sex_flag;
-                SharedPreferences.Editor editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putBoolean("voice_sex_flag", voice_sex_flag);
-                editor.apply();
-                if (voice_sex_flag) {
-                    item.setIcon(R.drawable.dialogue_layout_boy);
-                } else {
-                    item.setIcon(R.drawable.dialogue_layout_girl);
-                }
+            case R.id.toolbar_general_girl:
+                voiceSelect = "0";
+                SharedPreferences.Editor editor0 = getSharedPreferences("data", MODE_PRIVATE).edit();
+                editor0.putString("voiceSelect", voiceSelect);
+                editor0.apply();
+                voiceSelectDeal();
+                break;
+            case R.id.toolbar_general_boy:
+                voiceSelect = "1";
+                SharedPreferences.Editor editor1 = getSharedPreferences("data", MODE_PRIVATE).edit();
+                editor1.putString("voiceSelect", voiceSelect);
+                editor1.apply();
+                voiceSelectDeal();
+                break;
+            case R.id.toolbar_special_boy:
+                voiceSelect = "2";
+                SharedPreferences.Editor editor2 = getSharedPreferences("data", MODE_PRIVATE).edit();
+                editor2.putString("voiceSelect", voiceSelect);
+                editor2.apply();
+                voiceSelectDeal();
+                break;
+            case R.id.toolbar_emotion_boy:
+                voiceSelect = "3";
+                SharedPreferences.Editor editor3 = getSharedPreferences("data", MODE_PRIVATE).edit();
+                editor3.putString("voiceSelect", voiceSelect);
+                editor3.apply();
+                voiceSelectDeal();
+                break;
+            case R.id.toolbar_emotion_child:
+                voiceSelect = "4";
+                SharedPreferences.Editor editor4 = getSharedPreferences("data", MODE_PRIVATE).edit();
+                editor4.putString("voiceSelect", voiceSelect);
+                editor4.apply();
+                voiceSelectDeal();
                 break;
             case android.R.id.home:
                 //返回MainActivity
@@ -110,6 +130,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
 
         initData();//数据初始化
         initUI();
+        startTTS();
         dealData();
     }
 
@@ -118,7 +139,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
      */
     private void initData() {
         SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
-        voice_sex_flag = pref.getBoolean("voice_sex_flag", false);
+        voiceSelect = pref.getString("voiceSelect", "0");
         text_voice_flag = pref.getBoolean("text_voice_flag", false);
     }
 
@@ -179,11 +200,17 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 //发送按钮，文字编辑时发送按钮显示
                 String content = textEdit.getText().toString();
                 if (!"".equals(content)) {
-                    MSG msg = new MSG(content, MSG.TYPE_SENT);
-                    msgList.add(msg);
+                    sendMsg = new MSG(content, MSG.TYPE_SENT);
+                    msgList.add(sendMsg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
                     recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
                     textEdit.setText("");
+                    //返回对话结果
+                    receivedMsg = new MSG(content, MSG.TYPE_RECEIVED);
+                    msgList.add(receivedMsg);
+                    msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
+                    recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+                    mSpeechSynthesizer.speak(content);
                 }
                 break;
             default:
@@ -275,7 +302,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     }
 
     /**
-     * 语音部分
+     * 语音识别部分
      */
     private void startASR() {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
@@ -407,19 +434,19 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onRmsChanged(float rmsdB) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 音量变化处理 " + rmsdB);
-        if(rmsdB <= 1000){
+        if (rmsdB <= 1000) {
             imageWave.setImageResource(R.drawable.voice_image_wave1);
-        }else if(rmsdB > 1000 && rmsdB <= 2000){
+        } else if (rmsdB > 1000 && rmsdB <= 2000) {
             imageWave.setImageResource(R.drawable.voice_image_wave2);
-        }else if(rmsdB > 2000 && rmsdB <= 3000){
+        } else if (rmsdB > 2000 && rmsdB <= 3000) {
             imageWave.setImageResource(R.drawable.voice_image_wave3);
-        }else if(rmsdB > 3000 && rmsdB <= 4000){
+        } else if (rmsdB > 3000 && rmsdB <= 4000) {
             imageWave.setImageResource(R.drawable.voice_image_wave4);
-        }else if(rmsdB > 4000 && rmsdB <= 5000){
+        } else if (rmsdB > 4000 && rmsdB <= 5000) {
             imageWave.setImageResource(R.drawable.voice_image_wave5);
-        }else if(rmsdB > 5000 && rmsdB <= 6000){
+        } else if (rmsdB > 5000 && rmsdB <= 6000) {
             imageWave.setImageResource(R.drawable.voice_image_wave6);
-        }else if(rmsdB > 6000){
+        } else if (rmsdB > 6000) {
             imageWave.setImageResource(R.drawable.voice_image_wave7);
         }
         // 音量变化处理
@@ -443,39 +470,39 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         switch (error) {
             case SpeechRecognizer.ERROR_AUDIO:
                 sb.append("音频问题");
-                Toast.makeText(this,"音频问题",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "音频问题", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                 sb.append("没有语音输入");
-                Toast.makeText(this,"没有语音输入",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "没有语音输入", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_CLIENT:
                 sb.append("其它客户端错误");
-                Toast.makeText(this,"其它客户端错误",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "其它客户端错误", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
                 sb.append("权限不足");
-                Toast.makeText(this,"权限不足",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "权限不足", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NETWORK:
                 sb.append("网络问题");
-                Toast.makeText(this,"网络问题",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "网络问题", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NO_MATCH:
                 sb.append("没有匹配的识别结果");
-                Toast.makeText(this,"没有匹配的识别结果",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "没有匹配的识别结果", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
                 sb.append("引擎忙");
-                Toast.makeText(this,"引擎忙",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "引擎忙", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_SERVER:
                 sb.append("服务端错误");
-                Toast.makeText(this,"服务端错误",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "服务端错误", Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
                 sb.append("连接超时");
-                Toast.makeText(this,"连接超时",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "连接超时", Toast.LENGTH_SHORT).show();
                 break;
         }
         sb.append(":" + error);
@@ -487,19 +514,22 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     public void onResults(Bundle results) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 最终结果处理");
         ArrayList<String> nbest = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+        String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
         //用对话方式显示语音结果
-        MSG msg = new MSG(Arrays.toString(nbest.toArray(new String[nbest.size()])), MSG.TYPE_SENT);
-        msgList.add(msg);
+        sendMsg = new MSG(s, MSG.TYPE_SENT);
+        msgList.add(sendMsg);
         msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
         recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
-        /*LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : " + "识别成功：" + Arrays.toString(nbest.toArray(new String[nbest.size()])));
-        String json_res = results.getString("origin_result");
-        try {
-            LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : " + "origin_result=\n" + new JSONObject(json_res).toString(4));
-        } catch (Exception e) {
-            LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : " + "origin_result=\n" + "origin_result=[warning: bad json]\n" + json_res);
-        }*/
         // 最终结果处理
+        //返回语音识别的结果，语音合成说出
+        receivedMsg = new MSG(s, MSG.TYPE_RECEIVED);
+        msgList.add(receivedMsg);
+        msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
+        recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+        //需要合成的文本text的长度不能超过1024个GBK字节。
+        this.mSpeechSynthesizer.speak(s);
+
     }
 
     @Override
@@ -516,5 +546,104 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     public void onEvent(int eventType, Bundle params) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 处理事件回调");
         // 处理事件回调
+    }
+
+    /**
+     * 语音合成部分
+     */
+
+    // 初始化语音合成客户端并启动
+    private void startTTS() {
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
+        // 获取语音合成对象实例
+        mSpeechSynthesizer = SpeechSynthesizer.getInstance();
+        // 设置context
+        mSpeechSynthesizer.setContext(this);
+        // 设置语音合成状态监听器
+        mSpeechSynthesizer.setSpeechSynthesizerListener(this);
+        // 设置在线语音合成授权，需要填入从百度语音官网申请的api_key和secret_key
+        mSpeechSynthesizer.setApiKey("VsCpOUtv6vquaw5ZMKhLLZAs", "15004d92543351f67bf6873f9ec907ea");
+        // 设置离线语音合成授权，需要填入从百度语音官网申请的app_id
+        mSpeechSynthesizer.setAppId("9628655");
+        // 设置Mix模式的合成策略
+        this.mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);
+
+        voiceSelectDeal();
+    }
+    private void voiceSelectDeal(){
+        // 发音人（在线引擎），可用参数为0,1,2,3。。。（服务器端会动态增加，各值含义参考文档，以文档说明为准。0--普通女声，1--普通男声，2--特别男声，3--情感男声。。。）
+        this.mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_SPEAKER, voiceSelect);
+        // 判断授权信息是否正确，如果正确则初始化语音合成器并开始语音合成，如果失败则做错误处理
+        mSpeechSynthesizer.initTts(TtsMode.MIX);
+        switch (voiceSelect){
+            case "0":
+                receivedMsg = new MSG(Constant.GENERALGIRL, MSG.TYPE_RECEIVED);
+                mSpeechSynthesizer.speak(Constant.GENERALGIRL);
+                break;
+            case "1":
+                receivedMsg = new MSG(Constant.GENERALBOY, MSG.TYPE_RECEIVED);
+                mSpeechSynthesizer.speak(Constant.GENERALBOY);
+                break;
+            case "2":
+                receivedMsg = new MSG(Constant.SPECIALBOY, MSG.TYPE_RECEIVED);
+                mSpeechSynthesizer.speak(Constant.SPECIALBOY);
+                break;
+            case "3":
+                receivedMsg = new MSG(Constant.EMOTIONBOY, MSG.TYPE_RECEIVED);
+                mSpeechSynthesizer.speak(Constant.EMOTIONBOY);
+                break;
+            case "4":
+                receivedMsg = new MSG(Constant.EMOTIONCHILD, MSG.TYPE_RECEIVED);
+                mSpeechSynthesizer.speak(Constant.EMOTIONCHILD);
+                break;
+            default:
+                break;
+        }
+        msgList.add(receivedMsg);
+        msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
+        recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+
+    }
+
+    @Override
+    public void onSynthesizeStart(String s) {
+        // 监听到合成开始，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到合成开始" + s);
+    }
+
+    @Override
+    public void onSynthesizeDataArrived(String s, byte[] bytes, int i) {
+        // 监听到有合成数据到达，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到有合成数据到达" + s + "---" + i);
+    }
+
+    @Override
+    public void onSynthesizeFinish(String s) {
+        // 监听到合成结束，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到合成结束" + s);
+    }
+
+    @Override
+    public void onSpeechStart(String s) {
+        // 监听到合成并播放开始，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到合成并播放开始" + s);
+    }
+
+    @Override
+    public void onSpeechProgressChanged(String s, int i) {
+        // 监听到播放进度有变化，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到播放进度有变化" + s + "---" + i);
+    }
+
+    @Override
+    public void onSpeechFinish(String s) {
+        // 监听到播放结束，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到播放结束" + s);
+    }
+
+    @Override
+    public void onError(String s, SpeechError speechError) {
+        // 监听到出错，在此添加相关操作
+        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到出错" + s + "---" + speechError);
     }
 }

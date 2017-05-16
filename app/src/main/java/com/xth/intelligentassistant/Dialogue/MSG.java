@@ -31,4 +31,8 @@ public class MSG {
         this.content = content;
         this.type = type;
     }
+    public void dialogAnswer(String content){
+        this.type = TYPE_RECEIVED;
+        this.content = content;
+    }
 }
