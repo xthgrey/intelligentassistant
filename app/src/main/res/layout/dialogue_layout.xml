@@ -16,7 +16,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/dialogue_layout__title" />
+            android:text="@string/dialogue_layout__title"
+            android:textSize="25sp"/>
     </android.support.v7.widget.Toolbar>
 
     <android.support.v7.widget.RecyclerView

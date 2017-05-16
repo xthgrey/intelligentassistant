@@ -22,7 +22,7 @@
         <meta-data android:name="com.baidu.speech.SECRET_KEY" android:value="15004d92543351f67bf6873f9ec907ea"/>
         <service android:name="com.baidu.speech.VoiceRecognitionService" android:exported="false" />
 
-        <activity
+        <!--<activity
             android:name="com.baidu.voicerecognition.android.ui.BaiduASRDigitalDialog"
             android:configChanges="orientation|keyboardHidden|screenLayout"
             android:theme="@android:style/Theme.Dialog"
@@ -32,7 +32,7 @@
                 <action android:name="com.baidu.action.RECOGNIZE_SPEECH" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </activity>
+        </activity>-->
 
         <activity android:name=".MainActivity">
 

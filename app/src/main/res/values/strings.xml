@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">""</string>
+    <string name="app_name">"智能助手"</string>
 
     <string name="dialogue_layout__title">"开玩笑"</string>
     <string name="voice_button_text">"长按并说话"</string>
