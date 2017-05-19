@@ -21,8 +21,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    sourceSets{
-        main{
+    sourceSets {
+        main {
             jniLibs.srcDirs = ['libs']
         }
     }
@@ -35,10 +35,12 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
-    //声波效果
-    compile 'com.carlos.voiceline:mylibrary:1.0.6'
     //recyclerview
     compile 'com.android.support:recyclerview-v7:25.3.1'
+    //NavigationView
+    compile 'com.android.support:design:25.3.1'
+    //图片圆形化
+    compile 'de.hdodenhof:circleimageview:2.1.0'
     testCompile 'junit:junit:4.12'
     //语音识别
     compile files('libs/VoiceRecognition-2.1.20.jar')

@@ -1,24 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.xth.intelligentassistant.MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.carlos.voiceline.mylibrary.VoiceLineView
-        android:id="@+id/voicLine"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/black"
-        app:maxVolume="200"
-        app:middleLine="@android:color/black"
-        app:middleLineHeight="0dp"
-        app:fineness="three"
-        app:rectSpace="2dp"
-        app:rectWidth="5dp"
-        app:sensibility="four"
-        app:viewMode="line"
-        app:voiceLine="@android:color/holo_blue_light" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-</LinearLayout>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/main_layout_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"><!--自定义我们弹出的菜单的样式-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/main_toolbar_title"
+                android:textSize="25sp"/>
+        </android.support.v7.widget.Toolbar>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/main_voice_assistant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/main_layout_toolbar"
+            android:layout_alignParentRight="true"
+            android:layout_margin="15sp"
+            android:src="@drawable/main_voice_assistant"
+            android:elevation="8sp"/>
+
+
+    </RelativeLayout>
+
+   <android.support.design.widget.NavigationView
+       android:id="@+id/main_navigate_view"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:layout_gravity="start"
+       app:menu="@menu/main_navigate_menu"
+       app:headerLayout="@layout/activity_main_navigate_headerlayout">
+
+   </android.support.design.widget.NavigationView>
+
+
+</android.support.v4.widget.DrawerLayout>

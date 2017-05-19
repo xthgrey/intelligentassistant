@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/dialogue_layout__title"
+            android:text="@string/dialogue_toolbar_title"
             android:textSize="25sp"/>
     </android.support.v7.widget.Toolbar>
 
@@ -56,15 +56,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="5sp"
             android:layout_weight="1"
-            android:text="@string/voice_button_text" />
+            android:text="@string/dialogue_voice_button_text" />
 
         <Button
             android:id="@+id/send_button"
             android:layout_width="50sp"
             android:layout_height="35sp"
             android:layout_margin="5sp"
-            android:background="@color/send_button_color"
-            android:text="@string/send_button_text" />
+            android:text="@string/dialogue_send_button_text" />
 
     </LinearLayout>
 
