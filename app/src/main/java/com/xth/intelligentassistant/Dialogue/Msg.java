@@ -4,7 +4,7 @@ package com.xth.intelligentassistant.Dialogue;
  * Created by XTH on 2017/5/15.
  */
 
-public class MSG {
+public class Msg {
     public static final int TYPE_RECEIVED = 0;
     public static final int TYPE_SENT = 1;
     private String content;
@@ -27,7 +27,7 @@ public class MSG {
         this.type = type;
     }
 
-    public MSG(String content, int type) {
+    public Msg(String content, int type) {
         this.content = content;
         this.type = type;
     }

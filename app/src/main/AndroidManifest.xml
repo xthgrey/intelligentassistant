@@ -15,15 +15,19 @@
     <!--允许程序读取或写入系统设置-->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <!--允许程序写入外部存储,如SD卡上写文件-->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <!--程序可以读取设备外部存储空间-->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!--允许程序修改声音设置信息-->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!--允许程序从非系统拨号器里拨打电话：危险权限-->
-    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <!--允许程序访问联系人通讯录信息：危险权限-->
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!--用于进行网络定位：危险权限-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
+    <!--用于访问GPS定位：危险权限-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
+    <!--用于申请调用A-GPS模块-->
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"></uses-permission>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -61,6 +65,13 @@
         </activity>
 
         <uses-library android:name="android.test.runner" />
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="7e2bc40f84223efd9d54f197853a229a">
+
+        </meta-data>
+
+        <service android:name="com.amap.api.location.APSService"></service>
     </application>
 
 </manifest>

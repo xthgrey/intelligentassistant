@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.speech.RecognitionListener;
@@ -41,11 +40,9 @@ import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,9 +64,9 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private ImageView imageWave;//对话框中的波形界面
     private RecyclerView recyclerView;
     private MsgAdapter msgAdapter;
-    private List<MSG> msgList = new ArrayList<>();
-    private MSG receivedMsg;
-    private MSG sendMsg;
+    private List<Msg> msgList = new ArrayList<>();
+    private Msg receivedMsg;
+    private Msg sendMsg;
     private SharedPreferences.Editor editor;
     //语音识别对话框
     private Dialog dialog;
@@ -93,37 +90,37 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
         switch (item.getItemId()) {
             case R.id.toolbar_general_girl:
-                voiceSelect = "0";
-                editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putString("voiceSelect", voiceSelect);
+                voiceSelect = Constant.GENERALGIRL_VALUE;
+                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
+                editor.putString(Constant.VOICE_SELECT, voiceSelect);
                 editor.apply();
                 voiceSelectDeal();
                 break;
             case R.id.toolbar_general_boy:
-                voiceSelect = "1";
-                editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putString("voiceSelect", voiceSelect);
+                voiceSelect = Constant.GENERALBOY_VALUE;
+                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
+                editor.putString(Constant.VOICE_SELECT, voiceSelect);
                 editor.apply();
                 voiceSelectDeal();
                 break;
             case R.id.toolbar_special_boy:
-                voiceSelect = "2";
-                editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putString("voiceSelect", voiceSelect);
+                voiceSelect = Constant.SPECIALBOY_VALUE;
+                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
+                editor.putString(Constant.VOICE_SELECT, voiceSelect);
                 editor.apply();
                 voiceSelectDeal();
                 break;
             case R.id.toolbar_emotion_boy:
-                voiceSelect = "3";
-                editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putString("voiceSelect", voiceSelect);
+                voiceSelect = Constant.EMOTIONBOY_VALUE;
+                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
+                editor.putString(Constant.VOICE_SELECT, voiceSelect);
                 editor.apply();
                 voiceSelectDeal();
                 break;
             case R.id.toolbar_emotion_child:
-                voiceSelect = "4";
-                editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putString("voiceSelect", voiceSelect);
+                voiceSelect = Constant.EMOTIONCHILD_VALUE;
+                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
+                editor.putString(Constant.VOICE_SELECT, voiceSelect);
                 editor.apply();
                 voiceSelectDeal();
                 break;
@@ -158,13 +155,13 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         } else {
             switch (requestCode) {
                 case 1:
-                    Toast.makeText(this, "无法调用麦克", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, Constant.RECORD_AUDIO, Toast.LENGTH_SHORT).show();
                     break;
                 case 2:
-                    Toast.makeText(this, "无法通话", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, Constant.CALL_PHONE, Toast.LENGTH_SHORT).show();
                     break;
                 case 3:
-                    Toast.makeText(this, "无法读取联系人", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, Constant.READ_CONTACTS, Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
@@ -176,9 +173,9 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
      * 初始化数据
      */
     private void initData() {
-        SharedPreferences pref = getSharedPreferences("data", MODE_PRIVATE);
-        voiceSelect = pref.getString("voiceSelect", "0");
-        text_voice_flag = pref.getBoolean("text_voice_flag", false);
+        SharedPreferences pref = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE);
+        voiceSelect = pref.getString(Constant.VOICE_SELECT, Constant.GENERALGIRL_VALUE);
+        text_voice_flag = pref.getBoolean(Constant.TEXT_VOICE_FLAG, false);
     }
 
     /**
@@ -229,8 +226,8 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
             case R.id.text_voice_choose_button:
                 //文字语音选择
                 text_voice_flag = !text_voice_flag;
-                editor = getSharedPreferences("data", MODE_PRIVATE).edit();
-                editor.putBoolean("text_voice_flag", text_voice_flag);
+                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
+                editor.putBoolean(Constant.TEXT_VOICE_FLAG, text_voice_flag);
                 editor.apply();//保存提交
                 textVoiceChooseButtonDeal();
                 break;
@@ -238,13 +235,13 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 //发送按钮，文字编辑时发送按钮显示
                 String content = textEdit.getText().toString();
                 if (!"".equals(content)) {
-                    sendMsg = new MSG(content, MSG.TYPE_SENT);
+                    sendMsg = new Msg(content, Msg.TYPE_SENT);
                     msgList.add(sendMsg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
                     recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
                     textEdit.setText("");
                     //返回对话结果
-                    receivedMsg = new MSG(content, MSG.TYPE_RECEIVED);
+                    receivedMsg = new Msg(content, Msg.TYPE_RECEIVED);
                     msgList.add(receivedMsg);
                     msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
                     recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
@@ -305,35 +302,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     /**
      * Activity生命周期
      */
-    @Override
-    protected void onStart() {
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 开始");
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 恢复");
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 暂停");
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 停止");
-        super.onStop();
-    }
-
-    @Override
-    protected void onRestart() {
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 重新开始");
-        super.onRestart();
-    }
 
     @Override
     protected void onDestroy() {
@@ -349,7 +317,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private void startASR() {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
         Intent intent = new Intent();
-        bindParams(intent);
         SharedPreferences sp = getSharedPreferences("data", MODE_PRIVATE);
         String args = sp.getString("args", "");
         LogUtil.d(this.getLocalClassName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " 1: " + args);
@@ -357,10 +324,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
             intent.putExtra("args", args);
         }
         speechRecognizer.startListening(intent);
-    }
-
-    private void bindParams(Intent intent) {
-        // 设置识别参数
     }
 
     private void stop() {
@@ -415,47 +378,35 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onError(int error) {
-        StringBuilder sb = new StringBuilder();
         switch (error) {
             case SpeechRecognizer.ERROR_AUDIO:
-                sb.append("音频问题");
-                Toast.makeText(this, "音频问题", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_AUDIO, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                sb.append("没有语音输入");
-                Toast.makeText(this, "没有语音输入", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_SPEECH_TIMEOUT, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_CLIENT:
-                sb.append("其它客户端错误");
-                Toast.makeText(this, "其它客户端错误", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_CLIENT, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                sb.append("权限不足");
-                Toast.makeText(this, "权限不足", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_INSUFFICIENT_PERMISSIONS, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NETWORK:
-                sb.append("网络问题");
-                Toast.makeText(this, "网络问题", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,Constant.ERROR_NETWORK, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NO_MATCH:
-                sb.append("没有匹配的识别结果");
-                Toast.makeText(this, "没有匹配的识别结果", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_NO_MATCH, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                sb.append("引擎忙");
-                Toast.makeText(this, "引擎忙", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_RECOGNIZER_BUSY, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_SERVER:
-                sb.append("服务端错误");
-                Toast.makeText(this, "服务端错误", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_SERVER, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                sb.append("连接超时");
-                Toast.makeText(this, "连接超时", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_NETWORK_TIMEOUT, Toast.LENGTH_SHORT).show();
                 break;
         }
-        sb.append(":" + error);
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 出错处理 " + sb.toString());
         // 出错处理
     }
 
@@ -466,13 +417,13 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
 
         String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
         //用对话方式显示语音结果
-        sendMsg = new MSG(s, MSG.TYPE_SENT);
+        sendMsg = new Msg(s, Msg.TYPE_SENT);
         msgList.add(sendMsg);
         msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
         recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
         // 最终结果处理
         //返回语音识别的结果，语音合成说出
-        receivedMsg = new MSG(s, MSG.TYPE_RECEIVED);
+        receivedMsg = new Msg(s, Msg.TYPE_RECEIVED);
         msgList.add(receivedMsg);
         msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
         recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
@@ -533,15 +484,11 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
             InputStream is = null;
             FileOutputStream fos = null;
             try {
-                LogUtil.d("22222222222222222222222222222");
                 is = getResources().getAssets().open(source);
-                LogUtil.d("333333333333333333333333333333333333333333");
                 String path = dest;
                 fos = new FileOutputStream(path);
-                LogUtil.d("66666666666666666666666666666666666666666");
                 byte[] buffer = new byte[1024];
                 int size = 0;
-                LogUtil.d("777777777777777777777777777777777777777777");
                 while ((size = is.read(buffer, 0, 1024)) >= 0) {
                     fos.write(buffer, 0, size);
                 }
@@ -551,7 +498,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 if (fos != null) {
                     try {
                         fos.close();
-                        LogUtil.d("44444444444444444444444444444444444444444");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -559,7 +505,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 try {
                     if (is != null) {
                         is.close();
-                        LogUtil.d("55555555555555555555555555555555555555555555555");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -578,18 +523,18 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         // 设置语音合成状态监听器
         mSpeechSynthesizer.setSpeechSynthesizerListener(this);
         // 设置在线语音合成授权，需要填入从百度语音官网申请的api_key和secret_key
-        mSpeechSynthesizer.setApiKey("VsCpOUtv6vquaw5ZMKhLLZAs", "15004d92543351f67bf6873f9ec907ea");
+        mSpeechSynthesizer.setApiKey(Constant.API_KEY, Constant.SECRET_KEY);
         // 设置离线语音合成授权，需要填入从百度语音官网申请的app_id
-        mSpeechSynthesizer.setAppId("9628655");
+        mSpeechSynthesizer.setAppId(Constant.APP_ID);
         // 设置语音合成文本模型文件
         mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, mSampleDirPath + "/"
                 + Constant.TEXT_MODEL_NAME);
         // 设置语音合成声音模型文件
-        if(voiceSelect == "0" || voiceSelect == "4"){
-            mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+        if (voiceSelect == Constant.GENERALGIRL_VALUE || voiceSelect == Constant.EMOTIONCHILD_VALUE) {
+            mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                     + Constant.SPEECH_FEMALE_MODEL_NAME);
-        }else{
-            mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+        } else {
+            mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                     + Constant.SPEECH_MALE_MODEL_NAME);
         }
 
@@ -606,34 +551,34 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         // 发音人（在线引擎），可用参数为0,1,2,3。。。（服务器端会动态增加，各值含义参考文档，以文档说明为准。0--普通女声，1--普通男声，2--特别男声，3--情感男声。。。）
         this.mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_SPEAKER, voiceSelect);
         switch (voiceSelect) {
-            case "0":
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+            case Constant.GENERALGIRL_VALUE:
+                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                         + Constant.SPEECH_FEMALE_MODEL_NAME);
-                receivedMsg = new MSG(Constant.GENERALGIRL, MSG.TYPE_RECEIVED);
+                receivedMsg = new Msg(Constant.GENERALGIRL, Msg.TYPE_RECEIVED);
                 mSpeechSynthesizer.speak(Constant.GENERALGIRL);
                 break;
-            case "1":
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+            case Constant.GENERALBOY_VALUE:
+                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                         + Constant.SPEECH_MALE_MODEL_NAME);
-                receivedMsg = new MSG(Constant.GENERALBOY, MSG.TYPE_RECEIVED);
+                receivedMsg = new Msg(Constant.GENERALBOY, Msg.TYPE_RECEIVED);
                 mSpeechSynthesizer.speak(Constant.GENERALBOY);
                 break;
-            case "2":
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+            case Constant.SPECIALBOY_VALUE:
+                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                         + Constant.SPEECH_MALE_MODEL_NAME);
-                receivedMsg = new MSG(Constant.SPECIALBOY, MSG.TYPE_RECEIVED);
+                receivedMsg = new Msg(Constant.SPECIALBOY, Msg.TYPE_RECEIVED);
                 mSpeechSynthesizer.speak(Constant.SPECIALBOY);
                 break;
-            case "3":
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+            case Constant.EMOTIONBOY_VALUE:
+                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                         + Constant.SPEECH_MALE_MODEL_NAME);
-                receivedMsg = new MSG(Constant.EMOTIONBOY, MSG.TYPE_RECEIVED);
+                receivedMsg = new Msg(Constant.EMOTIONBOY, Msg.TYPE_RECEIVED);
                 mSpeechSynthesizer.speak(Constant.EMOTIONBOY);
                 break;
-            case "4":
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE,  mSampleDirPath + "/"
+            case Constant.EMOTIONCHILD_VALUE:
+                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
                         + Constant.SPEECH_FEMALE_MODEL_NAME);
-                receivedMsg = new MSG(Constant.EMOTIONCHILD, MSG.TYPE_RECEIVED);
+                receivedMsg = new Msg(Constant.EMOTIONCHILD, Msg.TYPE_RECEIVED);
                 mSpeechSynthesizer.speak(Constant.EMOTIONCHILD);
                 break;
             default:

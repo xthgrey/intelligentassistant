@@ -46,4 +46,6 @@ dependencies {
     compile files('libs/VoiceRecognition-2.1.20.jar')
     //语音合成
     compile files('libs/com.baidu.tts_2.3.0.jar')
+    //高德定位
+    compile files('libs/AMap_Location_V3.4.0_20170427.jar')
 }

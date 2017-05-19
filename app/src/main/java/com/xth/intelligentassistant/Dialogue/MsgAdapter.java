@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
-    private List<MSG> mMsgList;
+    private List<Msg> mMsgList;
 
     static class ViewHolder extends RecyclerView.ViewHolder{
 
@@ -36,7 +36,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
         }
     }
 
-    public MsgAdapter(List<MSG> mMsgList) {
+    public MsgAdapter(List<Msg> mMsgList) {
         LogUtil.d(getClass().getName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 获取表");
         this.mMsgList = mMsgList;
     }
@@ -51,12 +51,12 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         LogUtil.d(getClass().getName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
-        MSG msg = mMsgList.get(position);
-        if (msg.getType() == MSG.TYPE_RECEIVED){//消息是接收的
+        Msg msg = mMsgList.get(position);
+        if (msg.getType() == Msg.TYPE_RECEIVED){//消息是接收的
             holder.leftLayout.setVisibility(View.VISIBLE);
             holder.rightLayout.setVisibility(View.GONE);
             holder.leftMsg.setText(msg.getContent());//设置消息内容
-        }else if (msg.getType() == MSG.TYPE_SENT){//消息是发送的
+        }else if (msg.getType() == Msg.TYPE_SENT){//消息是发送的
             holder.rightLayout.setVisibility(View.VISIBLE);
             holder.leftLayout.setVisibility(View.GONE);
             holder.rightMsg.setText(msg.getContent());//设置消息内容

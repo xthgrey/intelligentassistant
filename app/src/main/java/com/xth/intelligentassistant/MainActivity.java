@@ -1,12 +1,10 @@
 package com.xth.intelligentassistant;
 
 import android.Manifest;
-import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.ContactsContract;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -16,14 +14,15 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.xth.intelligentassistant.Dialogue.DialogueActivity;
-import com.xth.intelligentassistant.util.LogUtil;
+import com.xth.intelligentassistant.util.CallApp;
+import com.xth.intelligentassistant.util.Constant;
+import com.xth.intelligentassistant.util.GaodeLocation;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -32,8 +31,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
     private FloatingActionButton voiceAssistant;
 
-    private Uri uri;
-    private Intent intent;
+    CallApp callApp = new CallApp(this);
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -56,8 +55,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     //运行时权限申请授权处理
     private void applyForPermission() {
-
-
+        //GPS权限不理
+       //4
     }
 
     /*用户选择运行时权限调用 onRequestPermissionsResult*/
@@ -68,10 +67,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             switch (requestCode) {
                 case 2:
-                    Toast.makeText(this, "无法通话", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, Constant.CALL_PHONE, Toast.LENGTH_SHORT).show();
                     break;
                 case 3:
-                    Toast.makeText(this, "无法读取联系人", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, Constant.READ_CONTACTS, Toast.LENGTH_SHORT).show();
+                    break;
+                case 4:
+                    Toast.makeText(this, Constant.ACCESS_COARSE_LOCATION, Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
@@ -103,53 +105,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_menu_browser:
-                intent = new Intent(Intent.ACTION_WEB_SEARCH);
-                intent.putExtra(SearchManager.QUERY, "");//后续可以通过对话搜索相应的内容
-                startActivity(intent);
+                callApp.callBrowser();
                 break;
             case R.id.main_menu_call:
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, 2);
-                }
-                uri = Uri.parse("tel:");
-                intent = new Intent(Intent.ACTION_DIAL, uri);
-                startActivity(intent);
+                callApp.callPhone();
                 break;
             case R.id.main_menu_friends:
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_CONTACTS}, 3);
-                }
-                readContacts();
+                callApp.readContacts();
                 break;
             case R.id.main_menu_location:
-                drawerLayout.closeDrawers();
+                new GaodeLocation(this);
                 break;
             default:
                 break;
         }
         return true;
-    }
-
-    /**
-     * 获取联系人信息
-     */
-    private void readContacts() {
-        Cursor cursor = null;
-        try {
-            cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                    String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    LogUtil.d(displayName + number);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
     }
 
     @Override
