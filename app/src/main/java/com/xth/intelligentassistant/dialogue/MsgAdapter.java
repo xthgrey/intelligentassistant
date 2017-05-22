@@ -1,4 +1,4 @@
-package com.xth.intelligentassistant.Dialogue;
+package com.xth.intelligentassistant.dialogue;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;

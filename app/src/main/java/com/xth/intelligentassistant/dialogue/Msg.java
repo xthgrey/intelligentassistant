@@ -1,4 +1,4 @@
-package com.xth.intelligentassistant.Dialogue;
+package com.xth.intelligentassistant.dialogue;
 
 /**
  * Created by XTH on 2017/5/15.

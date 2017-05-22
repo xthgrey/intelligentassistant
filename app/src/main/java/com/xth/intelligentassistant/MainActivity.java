@@ -1,15 +1,11 @@
 package com.xth.intelligentassistant;
 
-import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -19,10 +15,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.xth.intelligentassistant.Dialogue.DialogueActivity;
 import com.xth.intelligentassistant.util.CallApp;
 import com.xth.intelligentassistant.util.Constant;
-import com.xth.intelligentassistant.util.GaodeLocation;
+import com.xth.intelligentassistant.internetapi.GaodeLocation;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 

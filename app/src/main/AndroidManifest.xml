@@ -59,7 +59,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Dialogue.DialogueActivity"
+            android:name=".DialogueActivity"
             android:launchMode="singleTask">
 
         </activity>

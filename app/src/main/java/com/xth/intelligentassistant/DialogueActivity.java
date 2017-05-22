@@ -1,10 +1,9 @@
-package com.xth.intelligentassistant.Dialogue;
+package com.xth.intelligentassistant;
 
 import android.Manifest;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -34,10 +33,11 @@ import com.baidu.tts.client.SpeechError;
 import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
-import com.xth.intelligentassistant.MainActivity;
-import com.xth.intelligentassistant.R;
+import com.xth.intelligentassistant.dialogue.Msg;
+import com.xth.intelligentassistant.dialogue.MsgAdapter;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
+import com.xth.intelligentassistant.util.MySharePreferences;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -53,21 +53,18 @@ import java.util.List;
 
 public class DialogueActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener, RecognitionListener, SpeechSynthesizerListener {
 
-    private String voiceSelect;//0:普通女生，1：普通男生，2：特别男生，3：情感男生<度逍遥>，4：情感儿童声<度丫丫>
-    private Boolean text_voice_flag;//false:Text显示语音图标,true:voice显示文字图标
-
     private Toolbar toolBar;//标题栏
     private Button textVoiceChooseButton;//文字语音选择按钮
-    private Button voiceButton;//语音按钮
+    private Button voiceChineseButton;//语音中文按钮
+    private Button voiceEnglishButton;//语音英文按钮
     private Button sendButton;//发送按钮
     private EditText textEdit;//文字编辑
     private ImageView imageWave;//对话框中的波形界面
     private RecyclerView recyclerView;
+
     private MsgAdapter msgAdapter;
     private List<Msg> msgList = new ArrayList<>();
-    private Msg receivedMsg;
-    private Msg sendMsg;
-    private SharedPreferences.Editor editor;
+    private MySharePreferences mySharePreferences;
     //语音识别对话框
     private Dialog dialog;
     //语音识别器
@@ -90,48 +87,34 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
         switch (item.getItemId()) {
             case R.id.toolbar_general_girl:
-                voiceSelect = Constant.GENERALGIRL_VALUE;
-                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
-                editor.putString(Constant.VOICE_SELECT, voiceSelect);
-                editor.apply();
-                voiceSelectDeal();
+                mySharePreferences.setVoiceSelect(Constant.GENERALGIRL_VALUE);
+                voiceSelectDeal(mySharePreferences.getVoiceSelect());
                 break;
             case R.id.toolbar_general_boy:
-                voiceSelect = Constant.GENERALBOY_VALUE;
-                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
-                editor.putString(Constant.VOICE_SELECT, voiceSelect);
-                editor.apply();
-                voiceSelectDeal();
+                mySharePreferences.setVoiceSelect(Constant.GENERALBOY_VALUE);
+                voiceSelectDeal(mySharePreferences.getVoiceSelect());
                 break;
             case R.id.toolbar_special_boy:
-                voiceSelect = Constant.SPECIALBOY_VALUE;
-                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
-                editor.putString(Constant.VOICE_SELECT, voiceSelect);
-                editor.apply();
-                voiceSelectDeal();
+                mySharePreferences.setVoiceSelect(Constant.SPECIALBOY_VALUE);
+                voiceSelectDeal(mySharePreferences.getVoiceSelect());
                 break;
             case R.id.toolbar_emotion_boy:
-                voiceSelect = Constant.EMOTIONBOY_VALUE;
-                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
-                editor.putString(Constant.VOICE_SELECT, voiceSelect);
-                editor.apply();
-                voiceSelectDeal();
+                mySharePreferences.setVoiceSelect(Constant.EMOTIONBOY_VALUE);
+                voiceSelectDeal(mySharePreferences.getVoiceSelect());
                 break;
             case R.id.toolbar_emotion_child:
-                voiceSelect = Constant.EMOTIONCHILD_VALUE;
-                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
-                editor.putString(Constant.VOICE_SELECT, voiceSelect);
-                editor.apply();
-                voiceSelectDeal();
+                mySharePreferences.setVoiceSelect(Constant.EMOTIONCHILD_VALUE);
+                voiceSelectDeal(mySharePreferences.getVoiceSelect());
                 break;
             case android.R.id.home:
                 Intent intent = new Intent(DialogueActivity.this, MainActivity.class);
                 startActivity(intent);
                 //返回MainActivity
                 break;
+            default:
+                break;
         }
         return true;
-
     }
 
     @Override
@@ -141,7 +124,10 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         setContentView(R.layout.dialogue_layout);
 
         initialEnv();
-        initData();//数据初始化
+        /**
+         * 初始化数据
+         */
+        mySharePreferences = new MySharePreferences(this);
         initUI();
         startTTS();
         dealData();
@@ -170,21 +156,13 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     }
 
     /**
-     * 初始化数据
-     */
-    private void initData() {
-        SharedPreferences pref = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE);
-        voiceSelect = pref.getString(Constant.VOICE_SELECT, Constant.GENERALGIRL_VALUE);
-        text_voice_flag = pref.getBoolean(Constant.TEXT_VOICE_FLAG, false);
-    }
-
-    /**
      * 初始化界面
      */
     private void initUI() {
         toolBar = (Toolbar) findViewById(R.id.dialogue_layout_toolbar);
         textVoiceChooseButton = (Button) findViewById(R.id.text_voice_choose_button);
-        voiceButton = (Button) findViewById(R.id.voice_button);
+        voiceChineseButton = (Button) findViewById(R.id.voice_chinese_button);
+        voiceEnglishButton = (Button) findViewById(R.id.voice_english_button);
         sendButton = (Button) findViewById(R.id.send_button);
         textEdit = (EditText) findViewById(R.id.text_edit);
         recyclerView = (RecyclerView) findViewById(R.id.dialogue_layout_recyclerview);
@@ -216,8 +194,9 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         textVoiceChooseButton.setOnClickListener(this);
         sendButton.setOnClickListener(this);
 
-        //设置 voiceButton 触摸监听
-        voiceButton.setOnTouchListener(this);
+        //设置 voiceChineseButton voiceEnglishButton 触摸监听
+        voiceChineseButton.setOnTouchListener(this);
+        voiceEnglishButton.setOnTouchListener(this);
     }
 
     @Override
@@ -225,26 +204,17 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         switch (v.getId()) {
             case R.id.text_voice_choose_button:
                 //文字语音选择
-                text_voice_flag = !text_voice_flag;
-                editor = getSharedPreferences(Constant.PREF_FILE, MODE_PRIVATE).edit();
-                editor.putBoolean(Constant.TEXT_VOICE_FLAG, text_voice_flag);
-                editor.apply();//保存提交
+                mySharePreferences.setTextVoiceFlag(mySharePreferences.getTextVoiceFlag());
                 textVoiceChooseButtonDeal();
                 break;
             case R.id.send_button:
                 //发送按钮，文字编辑时发送按钮显示
                 String content = textEdit.getText().toString();
                 if (!"".equals(content)) {
-                    sendMsg = new Msg(content, Msg.TYPE_SENT);
-                    msgList.add(sendMsg);
-                    msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
-                    recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+                    recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_SENT));
                     textEdit.setText("");
                     //返回对话结果
-                    receivedMsg = new Msg(content, Msg.TYPE_RECEIVED);
-                    msgList.add(receivedMsg);
-                    msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
-                    recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+                    recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_RECEIVED));
                     mSpeechSynthesizer.speak(content);
                 }
                 break;
@@ -256,8 +226,10 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        String s = "";
         switch (v.getId()) {
-            case R.id.voice_button:
+            case R.id.voice_chinese_button:
+            case R.id.voice_english_button:
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     LogUtil.d("voice_button松开");
                     dialog.dismiss();
@@ -268,7 +240,14 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                     }
                     LogUtil.d("voice_button按下");
                     dialog.show();
-                    startASR();
+                    Intent intent = new Intent();
+                    if (v.getId() == R.id.voice_chinese_button) {
+                        s = Constant.CHINESE_LANGUAGE;
+                    } else if (v.getId() == R.id.voice_english_button) {
+                        s = Constant.ENGLISH_LANGUAGE;
+                    }
+                    intent.putExtra(Constant.LANGUAGE, s);
+                    speechRecognizer.startListening(intent);
                 }
                 break;
         }
@@ -286,14 +265,16 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
      * 文字语音选择按钮点击处理
      */
     private void textVoiceChooseButtonDeal() {
-        if (text_voice_flag) {//显示文字图片，显示语音按钮，语音按钮显示，编辑框消失，发送按钮消失
+        if (mySharePreferences.getTextVoiceFlag()) {//显示文字图片，显示语音按钮，语音按钮显示，编辑框消失，发送按钮消失
             textVoiceChooseButton.setBackgroundResource(R.drawable.dialogue_layout_textbutton);
-            voiceButton.setVisibility(View.VISIBLE);
+            voiceChineseButton.setVisibility(View.VISIBLE);
+            voiceEnglishButton.setVisibility(View.VISIBLE);
             textEdit.setVisibility(View.GONE);
             sendButton.setVisibility(View.GONE);
         } else {//显示语音图片,语音按钮消失，编辑框显示,发送按钮显示
             textVoiceChooseButton.setBackgroundResource(R.drawable.dialogue_layout_voicebutton);
-            voiceButton.setVisibility(View.GONE);
+            voiceChineseButton.setVisibility(View.GONE);
+            voiceEnglishButton.setVisibility(View.GONE);
             textEdit.setVisibility(View.VISIBLE);
             sendButton.setVisibility(View.VISIBLE);
         }
@@ -314,17 +295,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     /**
      * 语音识别部分
      */
-    private void startASR() {
-        LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : ");
-        Intent intent = new Intent();
-        SharedPreferences sp = getSharedPreferences("data", MODE_PRIVATE);
-        String args = sp.getString("args", "");
-        LogUtil.d(this.getLocalClassName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " 1: " + args);
-        if (null != args) {
-            intent.putExtra("args", args);
-        }
-        speechRecognizer.startListening(intent);
-    }
 
     private void stop() {
         LogUtil.d(this.getLocalClassName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + ": ");
@@ -392,7 +362,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 Toast.makeText(this, Constant.ERROR_INSUFFICIENT_PERMISSIONS, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NETWORK:
-                Toast.makeText(this,Constant.ERROR_NETWORK, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, Constant.ERROR_NETWORK, Toast.LENGTH_SHORT).show();
                 break;
             case SpeechRecognizer.ERROR_NO_MATCH:
                 Toast.makeText(this, Constant.ERROR_NO_MATCH, Toast.LENGTH_SHORT).show();
@@ -417,19 +387,12 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
 
         String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
         //用对话方式显示语音结果
-        sendMsg = new Msg(s, Msg.TYPE_SENT);
-        msgList.add(sendMsg);
-        msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
-        recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+        recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_SENT));
         // 最终结果处理
         //返回语音识别的结果，语音合成说出
-        receivedMsg = new Msg(s, Msg.TYPE_RECEIVED);
-        msgList.add(receivedMsg);
-        msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
-        recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+        recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_RECEIVED));
         //需要合成的文本text的长度不能超过1024个GBK字节。
-        this.mSpeechSynthesizer.speak(s);
-
+        mSpeechSynthesizer.speak(s);
     }
 
     @Override
@@ -462,6 +425,12 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         copyFromAssetsToSdcard(false, Constant.SPEECH_FEMALE_MODEL_NAME, mSampleDirPath + "/" + Constant.SPEECH_FEMALE_MODEL_NAME);
         copyFromAssetsToSdcard(false, Constant.SPEECH_MALE_MODEL_NAME, mSampleDirPath + "/" + Constant.SPEECH_MALE_MODEL_NAME);
         copyFromAssetsToSdcard(false, Constant.TEXT_MODEL_NAME, mSampleDirPath + "/" + Constant.TEXT_MODEL_NAME);
+        copyFromAssetsToSdcard(false, "english/" + Constant.SPEECH_FEMALE_MODEL_NAME_EN, mSampleDirPath + "/"
+                + Constant.SPEECH_FEMALE_MODEL_NAME_EN);
+        copyFromAssetsToSdcard(false, "english/" + Constant.SPEECH_MALE_MODEL_NAME_EN, mSampleDirPath + "/"
+                + Constant.SPEECH_MALE_MODEL_NAME_EN);
+        copyFromAssetsToSdcard(false, "english/" + Constant.TEXT_MODEL_NAME_EN, mSampleDirPath + "/"
+                + Constant.TEXT_MODEL_NAME_EN);
     }
 
     private void makeDir(String dirPath) {
@@ -530,64 +499,54 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, mSampleDirPath + "/"
                 + Constant.TEXT_MODEL_NAME);
         // 设置语音合成声音模型文件
-        if (voiceSelect == Constant.GENERALGIRL_VALUE || voiceSelect == Constant.EMOTIONCHILD_VALUE) {
-            mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                    + Constant.SPEECH_FEMALE_MODEL_NAME);
-        } else {
-            mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                    + Constant.SPEECH_MALE_MODEL_NAME);
-        }
-
+        mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/" + Constant.SPEECH_FEMALE_MODEL_NAME);
         // 设置Mix模式的合成策略
-        this.mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);
+        mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);
         //第一次使用离在线授权文件下载
-        this.mSpeechSynthesizer.auth(TtsMode.MIX);
-        // 判断授权信息是否正确，如果正确则初始化语音合成器并开始语音合成，如果失败则做错误处理
+        mSpeechSynthesizer.auth(TtsMode.MIX);
+        // 初始化语音合成器并开始语音合成
         mSpeechSynthesizer.initTts(TtsMode.MIX);
-        voiceSelectDeal();
+        voiceSelectDeal(mySharePreferences.getVoiceSelect());
     }
 
-    private void voiceSelectDeal() {
+    private void voiceSelectDeal(String voiceSelect) {
+        String voiceDat = "", voiceText = "", voiceLanguage = "";
         // 发音人（在线引擎），可用参数为0,1,2,3。。。（服务器端会动态增加，各值含义参考文档，以文档说明为准。0--普通女声，1--普通男声，2--特别男声，3--情感男声。。。）
-        this.mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_SPEAKER, voiceSelect);
+        mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_SPEAKER, voiceSelect);//在线语音声音
         switch (voiceSelect) {
             case Constant.GENERALGIRL_VALUE:
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                        + Constant.SPEECH_FEMALE_MODEL_NAME);
-                receivedMsg = new Msg(Constant.GENERALGIRL, Msg.TYPE_RECEIVED);
-                mSpeechSynthesizer.speak(Constant.GENERALGIRL);
+                voiceDat = Constant.SPEECH_FEMALE_MODEL_NAME;
+                voiceLanguage = Constant.SPEECH_FEMALE_MODEL_NAME_EN;
+                voiceText = Constant.GENERALGIRL;
                 break;
             case Constant.GENERALBOY_VALUE:
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                        + Constant.SPEECH_MALE_MODEL_NAME);
-                receivedMsg = new Msg(Constant.GENERALBOY, Msg.TYPE_RECEIVED);
-                mSpeechSynthesizer.speak(Constant.GENERALBOY);
+                voiceDat = Constant.SPEECH_MALE_MODEL_NAME;
+                voiceLanguage = Constant.SPEECH_MALE_MODEL_NAME_EN;
+                voiceText = Constant.GENERALBOY;
                 break;
             case Constant.SPECIALBOY_VALUE:
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                        + Constant.SPEECH_MALE_MODEL_NAME);
-                receivedMsg = new Msg(Constant.SPECIALBOY, Msg.TYPE_RECEIVED);
-                mSpeechSynthesizer.speak(Constant.SPECIALBOY);
+                voiceDat = Constant.SPEECH_MALE_MODEL_NAME;
+                voiceLanguage = Constant.SPEECH_MALE_MODEL_NAME_EN;
+                voiceText = Constant.SPECIALBOY;
                 break;
             case Constant.EMOTIONBOY_VALUE:
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                        + Constant.SPEECH_MALE_MODEL_NAME);
-                receivedMsg = new Msg(Constant.EMOTIONBOY, Msg.TYPE_RECEIVED);
-                mSpeechSynthesizer.speak(Constant.EMOTIONBOY);
+                voiceDat = Constant.SPEECH_MALE_MODEL_NAME;
+                voiceLanguage = Constant.SPEECH_MALE_MODEL_NAME_EN;
+                voiceText = Constant.EMOTIONBOY;
                 break;
             case Constant.EMOTIONCHILD_VALUE:
-                mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, mSampleDirPath + "/"
-                        + Constant.SPEECH_FEMALE_MODEL_NAME);
-                receivedMsg = new Msg(Constant.EMOTIONCHILD, Msg.TYPE_RECEIVED);
-                mSpeechSynthesizer.speak(Constant.EMOTIONCHILD);
+                voiceDat = Constant.SPEECH_FEMALE_MODEL_NAME;
+                voiceLanguage = Constant.SPEECH_FEMALE_MODEL_NAME_EN;
+                voiceText = Constant.EMOTIONCHILD;
                 break;
             default:
                 break;
         }
-        msgList.add(receivedMsg);
-        msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
-        recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
-
+        mSpeechSynthesizer.loadModel(mSampleDirPath + "/" + voiceDat, mSampleDirPath + "/" + Constant.TEXT_MODEL_NAME);
+        mSpeechSynthesizer.loadEnglishModel(mSampleDirPath + "/" + Constant.TEXT_MODEL_NAME_EN, mSampleDirPath
+                + "/" + voiceLanguage);
+        mSpeechSynthesizer.speak(voiceText);
+        recyclerViewPositionToEnd(new Msg(voiceText, Msg.TYPE_RECEIVED));
     }
 
     @Override
@@ -630,5 +589,11 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     public void onError(String s, SpeechError speechError) {
         // 监听到出错，在此添加相关操作
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 监听到出错" + s + "---" + speechError);
+    }
+
+    private void recyclerViewPositionToEnd(Msg msg) {
+        msgList.add(msg);
+        msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
+        recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
     }
 }

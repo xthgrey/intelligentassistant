@@ -21,6 +21,9 @@ public class Constant {
     public static final String SPEECH_FEMALE_MODEL_NAME = "bd_etts_ch_speech_female.dat";
     public static final String SPEECH_MALE_MODEL_NAME = "bd_etts_ch_speech_male.dat";
     public static final String TEXT_MODEL_NAME = "bd_etts_ch_text.dat";
+    public static final String SPEECH_FEMALE_MODEL_NAME_EN = "bd_etts_speech_female_en.dat";
+    public static final String SPEECH_MALE_MODEL_NAME_EN = "bd_etts_speech_male_en.dat";
+    public static final String TEXT_MODEL_NAME_EN = "bd_etts_text_en.dat";
 
 
     public static final String RECORD_AUDIO = "无法调用麦克";
@@ -44,7 +47,11 @@ public class Constant {
 
     public static final String VOICE_SELECT = "voiceSelect";
     public static final String TEXT_VOICE_FLAG = "text_voice_flag";
+    public static final String VOICE_SEX_CHOICE = "voiceSexChoice";
     public static final String PREF_FILE = "data";
+    public static final String LANGUAGE = "language";
+    public static final String ENGLISH_LANGUAGE = "en-GB";
+    public static final String CHINESE_LANGUAGE = "cmn-Hans-CN";
 
 
 
