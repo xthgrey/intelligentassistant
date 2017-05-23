@@ -35,6 +35,8 @@ import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
 import com.xth.intelligentassistant.dialogue.Msg;
 import com.xth.intelligentassistant.dialogue.MsgAdapter;
+import com.xth.intelligentassistant.util.AppInfo;
+import com.xth.intelligentassistant.util.CallApp;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 import com.xth.intelligentassistant.util.MySharePreferences;
@@ -73,6 +75,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private SpeechSynthesizer mSpeechSynthesizer;
 
     private String mSampleDirPath;
+    private CallApp callApp;
 
 
     @Override
@@ -159,6 +162,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
      * 初始化界面
      */
     private void initUI() {
+
         toolBar = (Toolbar) findViewById(R.id.dialogue_layout_toolbar);
         textVoiceChooseButton = (Button) findViewById(R.id.text_voice_choose_button);
         voiceChineseButton = (Button) findViewById(R.id.voice_chinese_button);
@@ -216,6 +220,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                     //返回对话结果
                     recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_RECEIVED));
                     mSpeechSynthesizer.speak(content);
+                    turnToAntherApp(content);
                 }
                 break;
             default:
@@ -233,7 +238,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     LogUtil.d("voice_button松开");
                     dialog.dismiss();
-                    stop();
+                    speechRecognizer.stopListening();
                 } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     if (ContextCompat.checkSelfPermission(DialogueActivity.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(DialogueActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
@@ -295,11 +300,6 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     /**
      * 语音识别部分
      */
-
-    private void stop() {
-        LogUtil.d(this.getLocalClassName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + ": ");
-        speechRecognizer.stopListening();
-    }
 
     @Override
     public void onReadyForSpeech(Bundle params) {
@@ -384,8 +384,8 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     public void onResults(Bundle results) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 最终结果处理");
         ArrayList<String> nbest = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-
-        String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
+        String s = nbest.get(0).replaceAll("\\[|\\]|\\,", "");
+//        String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
         //用对话方式显示语音结果
         recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_SENT));
         // 最终结果处理
@@ -393,15 +393,12 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_RECEIVED));
         //需要合成的文本text的长度不能超过1024个GBK字节。
         mSpeechSynthesizer.speak(s);
+        turnToAntherApp(s);
     }
 
     @Override
     public void onPartialResults(Bundle partialResults) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 临时结果处理");
-        ArrayList<String> nbest = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        if (nbest.size() > 0) {
-            LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : " + "~临时识别结果：" + Arrays.toString(nbest.toArray(new String[0])));
-        }
         // 临时结果处理
     }
 
@@ -595,5 +592,15 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         msgList.add(msg);
         msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
         recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
+    }
+    private void turnToAntherApp(String content){
+        if (callApp == null) {//第一次运行加载数据
+            callApp = new CallApp(this);
+        }
+        AppInfo appInfo = callApp.checkOpenApp(content);
+        if (appInfo != null) {
+            Intent intent = getPackageManager().getLaunchIntentForPackage(appInfo.getPkgName());
+            startActivity(intent);
+        }
     }
 }

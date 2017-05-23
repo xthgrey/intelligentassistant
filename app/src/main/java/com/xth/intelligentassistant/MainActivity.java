@@ -1,6 +1,7 @@
 package com.xth.intelligentassistant;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +19,12 @@ import android.widget.Toast;
 import com.xth.intelligentassistant.util.CallApp;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
+import com.xth.intelligentassistant.util.LogUtil;
+import com.xth.intelligentassistant.util.MySharePreferences;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
@@ -25,9 +32,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private FloatingActionButton voiceAssistant;
-
-    CallApp callApp = new CallApp(this);
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initUI() {
+
         toolBar = (Toolbar) findViewById(R.id.main_layout_toolbar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.main_navigate_view);
@@ -100,13 +105,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_menu_browser:
-                callApp.callBrowser();
+
                 break;
             case R.id.main_menu_call:
-                callApp.callPhone();
+
                 break;
             case R.id.main_menu_friends:
-                callApp.readContacts();
+
                 break;
             case R.id.main_menu_location:
                 new GaodeLocation(this);

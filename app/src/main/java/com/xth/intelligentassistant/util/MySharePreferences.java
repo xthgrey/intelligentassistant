@@ -3,11 +3,13 @@ package com.xth.intelligentassistant.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.io.Serializable;
+
 /**
  * Created by XTH on 2017/5/22.
  */
 
-public class MySharePreferences {
+public class MySharePreferences implements Serializable {
 
     //    private Context context;
     private String voiceSelect;//0:普通女生，1：普通男生，2：特别男生，3：情感男生<度逍遥>，4：情感儿童声<度丫丫>
