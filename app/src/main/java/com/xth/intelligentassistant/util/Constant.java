@@ -53,6 +53,10 @@ public class Constant {
     public static final String ENGLISH_LANGUAGE = "en-GB";
     public static final String CHINESE_LANGUAGE = "cmn-Hans-CN";
 
-
+    public static final String OPENING = "正在打开：";
+    public static final String SEARCH = "搜索";
+    public static final String SEARCHING = "正在搜索：";
+    public static final String CALL = "呼叫";
+    public static final String CALLING = "正在呼叫";
 
 }

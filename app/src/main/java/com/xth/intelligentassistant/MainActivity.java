@@ -1,7 +1,6 @@
 package com.xth.intelligentassistant;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,22 +15,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.xth.intelligentassistant.util.CallApp;
-import com.xth.intelligentassistant.util.Constant;
+import com.ashokvarma.bottomnavigation.BottomNavigationBar;
+import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
+import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
-import com.xth.intelligentassistant.util.MySharePreferences;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, BottomNavigationBar.OnTabSelectedListener {
 
     private Toolbar toolBar;//标题栏
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private FloatingActionButton voiceAssistant;
+    private BottomNavigationBar bottomNavigationBar;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -55,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //运行时权限申请授权处理
     private void applyForPermission() {
         //GPS权限不理
-       //4
+        //4
     }
 
     /*用户选择运行时权限调用 onRequestPermissionsResult*/
@@ -86,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.main_navigate_view);
         voiceAssistant = (FloatingActionButton) findViewById(R.id.main_voice_assistant);
+        bottomNavigationBar = (BottomNavigationBar) findViewById(R.id.main_bottom_navigation_bar);
 
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加toolbar导航栏
@@ -95,10 +92,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.main_navigate);
         }
+        //设置底部导航子项
+        bottomNavigationBar
+                .addItem(new BottomNavigationItem(R.drawable.main_home_location, "房间定位"))
+                .addItem(new BottomNavigationItem(R.drawable.main_home_device, "设备"))
+                .initialise();
+
         //设置 navigationView Item 监听
         navigationView.setNavigationItemSelectedListener(this);
         //设置悬浮按钮监听
         voiceAssistant.setOnClickListener(this);
+        //底部导航设置监听
+        bottomNavigationBar.setTabSelectedListener(this);
     }
 
     @Override
@@ -130,5 +135,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
                 break;
         }
+    }
+
+    @Override
+    public void onTabSelected(int position) {
+        LogUtil.d("onTabSelected" + position);
+    }
+
+    @Override
+    public void onTabUnselected(int position) {
+        LogUtil.d("onTabUnselected"+ position);
+    }
+
+    @Override
+    public void onTabReselected(int position) {
+        LogUtil.d("onTabReselected"+ position);
     }
 }

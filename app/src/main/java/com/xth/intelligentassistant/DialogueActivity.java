@@ -217,10 +217,11 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 if (!"".equals(content)) {
                     recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_SENT));
                     textEdit.setText("");
+                    //内容转换
+                    content = turnToAntherString(content);
                     //返回对话结果
                     recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_RECEIVED));
-                    mSpeechSynthesizer.speak(content);
-                    turnToAntherApp(content);
+                    mSpeechSynthesizer.speak( content);
                 }
                 break;
             default:
@@ -388,12 +389,13 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
 //        String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
         //用对话方式显示语音结果
         recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_SENT));
+        //内容转换
+        s = turnToAntherString(s);
         // 最终结果处理
         //返回语音识别的结果，语音合成说出
         recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_RECEIVED));
         //需要合成的文本text的长度不能超过1024个GBK字节。
         mSpeechSynthesizer.speak(s);
-        turnToAntherApp(s);
     }
 
     @Override
@@ -593,14 +595,11 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         msgAdapter.notifyItemInserted(msgList.size() - 1);//将列表中的最后一项加入适配器
         recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
     }
-    private void turnToAntherApp(String content){
+
+    private String turnToAntherString(String content) {
         if (callApp == null) {//第一次运行加载数据
             callApp = new CallApp(this);
         }
-        AppInfo appInfo = callApp.checkOpenApp(content);
-        if (appInfo != null) {
-            Intent intent = getPackageManager().getLaunchIntentForPackage(appInfo.getPkgName());
-            startActivity(intent);
-        }
+        return callApp.turnString(content);
     }
 }
