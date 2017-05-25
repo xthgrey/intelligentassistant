@@ -59,4 +59,20 @@ public class Constant {
     public static final String CALL = "呼叫";
     public static final String CALLING = "正在呼叫";
 
+    public static final String WEATHERADDRESS = "https://free-api.heweather.com/v5/now?city=";
+    public static final String WEATHERKEY = "&key=03f0e8903449476fa99331976a24ac6a";
+    public static final int WEATHER_CALL_BACK = 1;
+    public static final int WEATHER_EMPTY = 2;
+    public static final int WEATHER_REQUEST_ERROR = 3;
+    public static final String WEATHER_REQUEST_ERROR_TXT = "天气请求出错";
+    public static final String HEWEATHER5 = "HeWeather5";
+    public static final String WEATHER = "weather";
+    public static final String PNG = ".png";
+    public static final String TMPTEXT = "℃";
+    public static final String HEWEATHER5NOW = "now";
+    public static final String HEWEATHER5NOWCOND = "cond";
+    public static final String HEWEATHER5NOWCONDCODE = "code";
+    public static final String HEWEATHER5NOWCONDTXT = "txt";
+    public static final String HEWEATHER5TMP = "tmp";
+    public static final String HEWEATHER5HUM = "hum";
 }

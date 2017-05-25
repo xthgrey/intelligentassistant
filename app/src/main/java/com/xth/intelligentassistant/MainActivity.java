@@ -2,7 +2,11 @@ package com.xth.intelligentassistant;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -13,6 +17,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
@@ -21,13 +27,52 @@ import com.xth.intelligentassistant.internetapi.GaodeLocation;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, BottomNavigationBar.OnTabSelectedListener {
 
     private Toolbar toolBar;//标题栏
-    private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
-    private FloatingActionButton voiceAssistant;
-    private BottomNavigationBar bottomNavigationBar;
+    private DrawerLayout drawerLayout;//抽屉布局
+    private NavigationView navigationView;//抽屉中的导航布局
+    private FloatingActionButton voiceAssistant;//悬浮球
+    private BottomNavigationBar bottomNavigationBar;//底部导航
+    private TextView weatherCity;
+    private ImageView weatherCondCode;
+    private TextView weatherTmp;
+    private TextView weatherCounty;
+    private TextView weatherCondTxt;
+    private TextView weatherCondHum;
+
+    private GaodeLocation gaodeLocation;//高德地图定位
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case Constant.WEATHER_CALL_BACK:
+                    weatherCity.setText(gaodeLocation.getHttpUtiil().getWeather().getCity());
+                    try {
+                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHttpUtiil().getWeather().getCondcode()+ Constant.PNG);
+                        Bitmap bmp= BitmapFactory.decodeStream(in);
+                        weatherCondCode.setImageBitmap(bmp);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    weatherTmp.setText(gaodeLocation.getHttpUtiil().getWeather().getTmp());
+                    weatherCounty.setText(gaodeLocation.getHttpUtiil().getWeather().getCounty());
+                    weatherCondTxt.setText(gaodeLocation.getHttpUtiil().getWeather().getCondText());
+                    weatherCondHum.setText(gaodeLocation.getHttpUtiil().getWeather().getHum());
+                    break;
+                case Constant.WEATHER_EMPTY:
+                case Constant.WEATHER_REQUEST_ERROR:
+                    Toast.makeText(getApplicationContext(),Constant.WEATHER_REQUEST_ERROR_TXT,Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -84,6 +129,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         voiceAssistant = (FloatingActionButton) findViewById(R.id.main_voice_assistant);
         bottomNavigationBar = (BottomNavigationBar) findViewById(R.id.main_bottom_navigation_bar);
 
+        weatherCity = (TextView) findViewById(R.id.weather_city);
+        weatherCondCode = (ImageView) findViewById(R.id.weather_cond_code);
+        weatherTmp = (TextView) findViewById(R.id.weather_tmp);
+        weatherCounty = (TextView) findViewById(R.id.weather_county);
+        weatherCondTxt = (TextView) findViewById(R.id.weather_cond_txt);
+        weatherCondHum = (TextView)findViewById(R.id.weather_cond_hum);
+
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加toolbar导航栏
         ActionBar actionBar = getSupportActionBar();
@@ -119,7 +171,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 break;
             case R.id.main_menu_location:
-                new GaodeLocation(this);
+                gaodeLocation = new GaodeLocation(this);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Message message = new Message();
+                        while(true){
+                            int callBackFlag = gaodeLocation.getHttpUtiil().getWeatherCallBackFlag();
+                            switch (callBackFlag){
+                                case Constant.WEATHER_CALL_BACK:
+                                    message.what = Constant.WEATHER_CALL_BACK;
+                                    handler.sendMessage(message);
+                                    break;
+                                case Constant.WEATHER_EMPTY:
+                                    message.what = Constant.WEATHER_EMPTY;
+                                    handler.sendMessage(message);
+                                    break;
+                                case Constant.WEATHER_REQUEST_ERROR:
+                                    message.what = Constant.WEATHER_EMPTY;
+                                    handler.sendMessage(message);
+                                    break;
+                                default:
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                            }
+                            if (callBackFlag != 0){
+                                break;
+                            }
+                        }
+                    }
+                }).start();
                 break;
             default:
                 break;
@@ -144,11 +229,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onTabUnselected(int position) {
-        LogUtil.d("onTabUnselected"+ position);
+        LogUtil.d("onTabUnselected" + position);
     }
 
     @Override
     public void onTabReselected(int position) {
-        LogUtil.d("onTabReselected"+ position);
+        LogUtil.d("onTabReselected" + position);
     }
 }

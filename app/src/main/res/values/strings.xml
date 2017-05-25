@@ -16,4 +16,6 @@
     <string name="dialogue_send_button_text">"发送"</string>
     <string name="dialogue_chinese_button_text">"中文"</string>
     <string name="dialogue_english_button_text">"English"</string>
+
+    <string name="XX">"--"</string>
 </resources>

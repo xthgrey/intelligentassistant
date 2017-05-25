@@ -5,6 +5,7 @@
     <color name="colorAccent">#666</color>
 
     <color name="dialogue_layout_recyclerview_color">#DDD</color>
+    <color name="weather_layout_color">#AAA</color>
 
     <color name="dialogue_layout_left_msg_color">#FFF</color>
     <color name="dialogue_layout_right_msg_color">#000</color>

@@ -30,9 +30,20 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/main_layout_toolbar"
             android:layout_alignParentRight="true"
-            android:layout_margin="15sp"
+            android:layout_marginRight="15sp"
             android:src="@drawable/main_voice_assistant"
             android:elevation="8sp"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_below="@+id/main_layout_toolbar"
+            android:layout_above="@+id/main_bottom_navigation_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/dialogue_layout_recyclerview_color">
+            <include layout="@layout/weather_layout"/>
+
+        </LinearLayout>
 
         <com.ashokvarma.bottomnavigation.BottomNavigationBar
             android:id="@+id/main_bottom_navigation_bar"

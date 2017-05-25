@@ -69,7 +69,6 @@ public class CallApp {
         }
         return s;
     }
-
     /**
      * 获取联系人信息
      */

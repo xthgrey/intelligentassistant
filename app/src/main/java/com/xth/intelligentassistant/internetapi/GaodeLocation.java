@@ -13,6 +13,7 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.xth.intelligentassistant.util.Constant;
+import com.xth.intelligentassistant.util.HttpUtiil;
 
 /**
  * Created by XTH on 2017/5/19.
@@ -26,12 +27,21 @@ public class GaodeLocation implements AMapLocationListener {
 
     private Context context;//该Activity
     private String detailAdress;
+    private String locationCity;
+    private String locationCounty;
+
+    public HttpUtiil getHttpUtiil() {
+        return httpUtiil;
+    }
+
+    private HttpUtiil httpUtiil;
 
     public String getDetailAdress() {
         return detailAdress;
     }
 
     public GaodeLocation(Context context) {
+        httpUtiil = new HttpUtiil();
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 4);
         }
@@ -66,6 +76,9 @@ public class GaodeLocation implements AMapLocationListener {
             if (aMapLocation.getErrorCode() == 0) {
                 //可在其中解析amapLocation获取相应内容。
                 detailAdress = aMapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
+                locationCity = aMapLocation.getCity();//城市信息
+                locationCounty = aMapLocation.getDistrict();//城区信息
+                httpUtiil.queryWeather(locationCity,locationCounty);
                 Toast.makeText(context, Constant.MAP_LOCATION_TIP + aMapLocation.getAddress(),Toast.LENGTH_LONG).show();
             }else {
                 //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
