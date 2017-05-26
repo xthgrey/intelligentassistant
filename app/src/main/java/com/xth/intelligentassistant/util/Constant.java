@@ -61,9 +61,6 @@ public class Constant {
 
     public static final String WEATHERADDRESS = "https://free-api.heweather.com/v5/now?city=";
     public static final String WEATHERKEY = "&key=03f0e8903449476fa99331976a24ac6a";
-    public static final int WEATHER_CALL_BACK = 1;
-    public static final int WEATHER_EMPTY = 2;
-    public static final int WEATHER_REQUEST_ERROR = 3;
     public static final String WEATHER_REQUEST_ERROR_TXT = "天气请求出错";
     public static final String HEWEATHER5 = "HeWeather5";
     public static final String WEATHER = "weather";
@@ -75,4 +72,14 @@ public class Constant {
     public static final String HEWEATHER5NOWCONDTXT = "txt";
     public static final String HEWEATHER5TMP = "tmp";
     public static final String HEWEATHER5HUM = "hum";
+
+    public static final String MODIFYTXT = "修改";
+    public static final String LONGCLICKEIDT = "长按编辑";
+    public static final String SWIPE_SENCE_KEY = "sence";
+
+    public static final int WEATHER_CALL_BACK = 1;
+    public static final int WEATHER_EMPTY = 2;
+    public static final int WEATHER_REQUEST_ERROR = 3;
+    public static final int MODIFY = 0;
+    public static final int DELETE = 1;
 }

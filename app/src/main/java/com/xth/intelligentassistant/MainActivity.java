@@ -1,5 +1,6 @@
 package com.xth.intelligentassistant;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,20 +11,28 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
+import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
+import com.xth.intelligentassistant.main.SwipeMenuListFragment;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
@@ -44,17 +53,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView weatherCondTxt;
     private TextView weatherCondHum;
 
+    private SwipeMenuListFragment swipeMenuListFragment;
+
     private GaodeLocation gaodeLocation;//高德地图定位
 
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what){
+            switch (msg.what) {
                 case Constant.WEATHER_CALL_BACK:
                     weatherCity.setText(gaodeLocation.getHttpUtiil().getWeather().getCity());
                     try {
-                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHttpUtiil().getWeather().getCondcode()+ Constant.PNG);
-                        Bitmap bmp= BitmapFactory.decodeStream(in);
+                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHttpUtiil().getWeather().getCondcode() + Constant.PNG);
+                        Bitmap bmp = BitmapFactory.decodeStream(in);
                         weatherCondCode.setImageBitmap(bmp);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -66,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     break;
                 case Constant.WEATHER_EMPTY:
                 case Constant.WEATHER_REQUEST_ERROR:
-                    Toast.makeText(getApplicationContext(),Constant.WEATHER_REQUEST_ERROR_TXT,Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), Constant.WEATHER_REQUEST_ERROR_TXT, Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     break;
@@ -75,13 +86,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     };
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_tool_bar_menu, menu);//动态创建Toolbar中的菜单
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.add:
+                editName();
+                break;
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+    private void editName(){
+        final EditText et = new EditText(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("场景名称");
+        builder.setView(et);
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String s = et.getText().toString();
+                s = s.replaceAll("\\s", "");
+                if (!"".equals(s)) {
+                    swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, et.getText().toString());
+                }
+            }
+        });
+        builder.setNegativeButton("取消", null);
+        builder.show();
     }
 
     @Override
@@ -90,7 +128,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         applyForPermission();
+        initData();
         initUI();
+    }
+
+    private void initData() {
+
     }
 
     //运行时权限申请授权处理
@@ -134,7 +177,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         weatherTmp = (TextView) findViewById(R.id.weather_tmp);
         weatherCounty = (TextView) findViewById(R.id.weather_county);
         weatherCondTxt = (TextView) findViewById(R.id.weather_cond_txt);
-        weatherCondHum = (TextView)findViewById(R.id.weather_cond_hum);
+        weatherCondHum = (TextView) findViewById(R.id.weather_cond_hum);
+
+        swipeMenuListFragment = new SwipeMenuListFragment();
 
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加toolbar导航栏
@@ -149,6 +194,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .addItem(new BottomNavigationItem(R.drawable.main_home_location, "房间定位"))
                 .addItem(new BottomNavigationItem(R.drawable.main_home_device, "设备"))
                 .initialise();
+        //主界面list view显示布局
+        replaceFragment(swipeMenuListFragment);
 
         //设置 navigationView Item 监听
         navigationView.setNavigationItemSelectedListener(this);
@@ -160,15 +207,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        drawerLayout.closeDrawer(GravityCompat.START);
         switch (item.getItemId()) {
             case R.id.main_menu_browser:
-
                 break;
             case R.id.main_menu_call:
-
                 break;
             case R.id.main_menu_friends:
-
                 break;
             case R.id.main_menu_location:
                 gaodeLocation = new GaodeLocation(this);
@@ -176,9 +221,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     @Override
                     public void run() {
                         Message message = new Message();
-                        while(true){
+                        while (true) {
                             int callBackFlag = gaodeLocation.getHttpUtiil().getWeatherCallBackFlag();
-                            switch (callBackFlag){
+                            switch (callBackFlag) {
                                 case Constant.WEATHER_CALL_BACK:
                                     message.what = Constant.WEATHER_CALL_BACK;
                                     handler.sendMessage(message);
@@ -199,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     }
                                     break;
                             }
-                            if (callBackFlag != 0){
+                            if (callBackFlag != 0) {
                                 break;
                             }
                         }
@@ -224,16 +269,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onTabSelected(int position) {
+
         LogUtil.d("onTabSelected" + position);
     }
 
     @Override
     public void onTabUnselected(int position) {
+
         LogUtil.d("onTabUnselected" + position);
     }
 
     @Override
     public void onTabReselected(int position) {
+
         LogUtil.d("onTabReselected" + position);
     }
+
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.main_list_view_layout, fragment);
+        transaction.commit();
+    }
+
+
 }
