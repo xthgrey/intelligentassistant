@@ -14,6 +14,9 @@ import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import com.uuzuche.lib_zxing.activity.CaptureActivity;
+import com.xth.intelligentassistant.MainActivity;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +41,12 @@ public class CallApp {
         appInfos = queryAllAppInfo();
     }
 
-    private String callBrowser(String s) {
+    /**
+     * 搜索
+     * @param s
+     * @return
+     */
+    public String callBrowser(String s) {
         if (s.indexOf(Constant.SEARCH) != -1) {
             s = s.substring(s.indexOf(Constant.SEARCH) + Constant.SEARCH.length(), s.length());//取出字符串中搜索后面的字符串
             intent = new Intent(Intent.ACTION_WEB_SEARCH);
@@ -49,6 +57,11 @@ public class CallApp {
         return s;
     }
 
+    /**
+     * 呼叫
+     * @param s
+     * @return
+     */
     public String callPhone(String s) {
         String number = "";
         if (s.indexOf(Constant.CALL) != -1) {
@@ -67,6 +80,15 @@ public class CallApp {
             context.startActivity(intent);
             return Constant.CALLING + s;
         }
+        return s;
+    }
+    public String scan(String s){
+        if(s.indexOf(Constant.SCAN) != -1){
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.CAMERA}, 4);
+            }
+        }
+        s = s.substring(s.indexOf(Constant.SCAN) ,Constant.SCAN.length());
         return s;
     }
     /**
@@ -98,6 +120,11 @@ public class CallApp {
         return contacts;
     }
 
+    /**
+     * 检测文字对应的APP
+     * @param s
+     * @return
+     */
     private String checkOpenApp(String s) {
         for (AppInfo appInfo : appInfos) {
             LogUtil.d(appInfo.getAppLabel());
@@ -119,6 +146,11 @@ public class CallApp {
         return s;
     }
 
+    /**
+     * 将文字转换成程序识别的文字
+     * @param s
+     * @return
+     */
     public String turnString(String s) {
 
         //检测内容为打开app

@@ -58,6 +58,7 @@ public class Constant {
     public static final String SEARCHING = "正在搜索：";
     public static final String CALL = "呼叫";
     public static final String CALLING = "正在呼叫";
+    public static final String SCAN = "扫一扫";
 
     public static final String WEATHERADDRESS = "https://free-api.heweather.com/v5/now?city=";
     public static final String WEATHERKEY = "&key=03f0e8903449476fa99331976a24ac6a";
@@ -82,4 +83,6 @@ public class Constant {
     public static final int WEATHER_REQUEST_ERROR = 3;
     public static final int MODIFY = 0;
     public static final int DELETE = 1;
+    public static final int REQUEST_CODE = 1;
+    public static final int REQUEST_IMAGE = 2;
 }

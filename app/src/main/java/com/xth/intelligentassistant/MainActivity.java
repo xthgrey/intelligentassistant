@@ -1,13 +1,16 @@
 package com.xth.intelligentassistant;
 
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -31,6 +34,10 @@ import android.widget.Toast;
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
+import com.uuzuche.lib_zxing.activity.CaptureActivity;
+import com.uuzuche.lib_zxing.activity.CaptureFragment;
+import com.uuzuche.lib_zxing.activity.CodeUtils;
+import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
 import com.xth.intelligentassistant.main.SwipeMenuListFragment;
 import com.xth.intelligentassistant.util.Constant;
@@ -133,13 +140,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initData() {
-
+        ZXingLibrary.initDisplayOpinion(this);
     }
 
     //运行时权限申请授权处理
     private void applyForPermission() {
         //GPS权限不理
-        //4
+        //5
     }
 
     /*用户选择运行时权限调用 onRequestPermissionsResult*/
@@ -209,9 +216,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         drawerLayout.closeDrawer(GravityCompat.START);
         switch (item.getItemId()) {
-            case R.id.main_menu_browser:
+            case R.id.main_menu_qrcode:
+                Intent scanIntent = new Intent(this, QrcodeActivity.class);
+                startActivityForResult(scanIntent, Constant.REQUEST_CODE);
                 break;
-            case R.id.main_menu_call:
+            case R.id.main_menu_picture:
+                Intent pictureIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                pictureIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                pictureIntent.setType("image/*");
+                startActivityForResult(pictureIntent, Constant.REQUEST_IMAGE);
                 break;
             case R.id.main_menu_friends:
                 break;
@@ -255,6 +268,55 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            //处理扫描结果（在界面上显示）
+            case  Constant.REQUEST_CODE:
+                if (null != data) {
+                    Bundle bundle = data.getExtras();
+                    if (bundle == null) {
+                        return;
+                    }
+                    if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
+                        String result = bundle.getString(CodeUtils.RESULT_STRING);
+                        Toast.makeText(this, "解析结果:" + result, Toast.LENGTH_LONG).show();
+                    } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
+                        Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
+                    }
+                }
+                break;
+            case Constant.REQUEST_IMAGE:
+                if (data != null) {
+                    Uri uri = data.getData();
+                    ContentResolver cr = getContentResolver();
+                    try {
+                        Bitmap mBitmap = MediaStore.Images.Media.getBitmap(cr, uri);//显得到bitmap图片
+
+                        CodeUtils.analyzeBitmap(String.valueOf(mBitmap), new CodeUtils.AnalyzeCallback() {
+                            @Override
+                            public void onAnalyzeSuccess(Bitmap mBitmap, String result) {
+                                Toast.makeText(MainActivity.this, "解析结果:" + result, Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onAnalyzeFailed() {
+                                Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
+                            }
+                        });
+
+                        if (mBitmap != null) {
+                            mBitmap.recycle();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                break;
+        }
+
     }
 
     @Override

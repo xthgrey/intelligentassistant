@@ -14,5 +14,6 @@
     <color name="main_headerlayout_user_name_color">#13227a</color>
     <color name="main_headerlayout_account_number_color">#13227a</color>
 
+    <color name="scaner_color">#13227a</color>
 
 </resources>

@@ -136,7 +136,6 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 editName(swipeMenuItemMap);
                 break;
             case Constant.DELETE:
-                LogUtil.d("delete"+position +"==="+index);
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
                 break;

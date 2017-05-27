@@ -2,32 +2,43 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xth.intelligentassistant">
 
-    <!--允许程序录制声音通过手机或耳机的麦克：危险权限-->
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.camera.front" />
+
+    <!-- 允许程序录制声音通过手机或耳机的麦克：危险权限 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!--允许程序访问网络连接，可能产生GPRS流量-->
+    <!-- 允许程序访问网络连接，可能产生GPRS流量 -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!--允许程序获取网络信息状态，如当前的网络连接是否有效-->
+    <!-- 允许程序获取网络信息状态，如当前的网络连接是否有效 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!--允许程序获取当前WiFi接入的状态以及WLAN热点的信息-->
+    <!-- 允许程序获取当前WiFi接入的状态以及WLAN热点的信息 -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!--允许程序改变WiFi状态-->
+    <!-- 允许程序改变WiFi状态 -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <!--允许程序读取或写入系统设置-->
+    <!-- 允许程序读取或写入系统设置 -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <!--允许程序写入外部存储,如SD卡上写文件-->
+    <!-- 允许程序写入外部存储,如SD卡上写文件 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!--允许程序修改声音设置信息-->
+    <!-- 允许程序修改声音设置信息 -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <!--允许程序从非系统拨号器里拨打电话：危险权限-->
+    <!-- 允许程序从非系统拨号器里拨打电话：危险权限 -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <!--允许程序访问联系人通讯录信息：危险权限-->
+    <!-- 允许程序访问联系人通讯录信息：危险权限 -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <!--用于进行网络定位：危险权限-->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
-    <!--用于访问GPS定位：危险权限-->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-    <!--用于申请调用A-GPS模块-->
-    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"></uses-permission>
+    <!-- 用于进行网络定位：危险权限 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- 用于访问GPS定位：危险权限 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 用于申请调用A-GPS模块 -->
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <!-- 允许程序访问摄像头进行拍照：危险权限 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 允许程序振动 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 允许访问闪光灯 -->
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+
     <application
         android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
@@ -61,18 +72,18 @@
         </activity>
         <activity
             android:name=".DialogueActivity"
-            android:launchMode="singleTask">
-
-        </activity>
+            android:launchMode="singleTask"></activity>
+        <activity android:name=".CustomScanActivity" />
 
         <uses-library android:name="android.test.runner" />
+
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="7e2bc40f84223efd9d54f197853a229a">
+            android:value="7e2bc40f84223efd9d54f197853a229a"></meta-data>
 
-        </meta-data>
+        <service android:name="com.amap.api.location.APSService" />
 
-        <service android:name="com.amap.api.location.APSService"></service>
+        <activity android:name=".QrcodeActivity"></activity>
     </application>
 
 </manifest>

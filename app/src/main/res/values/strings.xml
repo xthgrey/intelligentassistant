@@ -4,7 +4,9 @@
     <string name="main_toolbar_title">"KKKK"</string>
 
     <string name="main_menu_browser_text">"打开浏览器"</string>
+    <string name="main_menu_qrcode_text">"扫码"</string>
     <string name="main_menu_call_text">"打开电话"</string>
+    <string name="main_menu_picture">"打开图库"</string>
     <string name="main_menu_friends_text">"打开通讯录"</string>
     <string name="main_menu_location_text">"定位"</string>
     <string name="main_menu_mail_text">"短信"</string>
@@ -20,4 +22,5 @@
     <string name="add">"添加"</string>
 
     <string name="XX">"--"</string>
+
 </resources>
