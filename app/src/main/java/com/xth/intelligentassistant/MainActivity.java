@@ -1,6 +1,7 @@
 package com.xth.intelligentassistant;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,6 +27,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -33,20 +35,26 @@ import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
-import com.baoyz.swipemenulistview.SwipeMenuListView;
-import com.uuzuche.lib_zxing.activity.CaptureActivity;
-import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 import com.uuzuche.lib_zxing.activity.ZXingLibrary;
+import com.xth.intelligentassistant.db.Device;
+import com.xth.intelligentassistant.db.OperateDB;
+import com.xth.intelligentassistant.db.Sence;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
+import com.xth.intelligentassistant.main.ExpandableListFragment;
 import com.xth.intelligentassistant.main.SwipeMenuListFragment;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
+import org.litepal.crud.DataSupport;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, BottomNavigationBar.OnTabSelectedListener {
+
+    private int bottomNavigationPosition;
 
     private Toolbar toolBar;//标题栏
     private DrawerLayout drawerLayout;//抽屉布局
@@ -61,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView weatherCondHum;
 
     private SwipeMenuListFragment swipeMenuListFragment;
+    private ExpandableListFragment expandableListFragment;
 
     private GaodeLocation gaodeLocation;//高德地图定位
 
@@ -102,7 +111,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.add:
-                editName();
+                switch (bottomNavigationPosition) {
+                    case 0:
+                        editName(Constant.SENCE_NAME);
+                        break;
+                    case 1:
+                        editName(Constant.DEVICE_NAME);
+                        break;
+                }
+
                 break;
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
@@ -110,23 +127,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return super.onOptionsItemSelected(item);
     }
-    private void editName(){
-        final EditText et = new EditText(this);
+
+    private void editName(final String title) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("场景名称");
-        builder.setView(et);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        View view = View.inflate(this, R.layout.alert_dialog_layout, null);
+        final EditText alertDialogEdit = (EditText) view.findViewById(R.id.alert_dialog_edit);
+        builder.setTitle(title);
+        builder.setView(view);
+        builder.setPositiveButton(Constant.CONFIRM, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String s = et.getText().toString();
+                String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
                 if (!"".equals(s)) {
-                    swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, et.getText().toString());
+                    switch (title){
+                        case Constant.SENCE_NAME:
+                            swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
+                            break;
+                        case Constant.DEVICE_NAME:
+                            expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, alertDialogEdit.getText().toString());
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         });
-        builder.setNegativeButton("取消", null);
-        builder.show();
+        builder.setNegativeButton(Constant.CANCEL, null);
+
+        AlertDialog tempDialog = builder.create();
+        tempDialog.setView(view, 0, 0, 0, 0);
+        /** 3.自动弹出软键盘 **/
+        tempDialog.setOnShowListener(new AlertDialog.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(alertDialogEdit, InputMethodManager.SHOW_IMPLICIT);
+
+            }
+        });
+        tempDialog.show();
     }
 
     @Override
@@ -140,7 +181,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initData() {
+        List<Sence> senceList = DataSupport.findAll(Sence.class);
+        List<Device> deviceList = DataSupport.findAll(Device.class);
+        for (Sence sence:senceList){
+            LogUtil.d("initData Sence: " + sence.getSenceName());
+        }
+        for (Device device:deviceList){
+            LogUtil.d("initData Device：" + device.getDeviceName());
+        }
+        for (Device device:deviceList){
+            LogUtil.d("initData DeviceSence：" + device.getSenceName());
+        }
         ZXingLibrary.initDisplayOpinion(this);
+        bottomNavigationPosition = 0;
     }
 
     //运行时权限申请授权处理
@@ -187,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         weatherCondHum = (TextView) findViewById(R.id.weather_cond_hum);
 
         swipeMenuListFragment = new SwipeMenuListFragment();
+        expandableListFragment = new ExpandableListFragment();
 
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加toolbar导航栏
@@ -274,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             //处理扫描结果（在界面上显示）
-            case  Constant.REQUEST_CODE:
+            case Constant.REQUEST_CODE:
                 if (null != data) {
                     Bundle bundle = data.getExtras();
                     if (bundle == null) {
@@ -331,7 +385,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onTabSelected(int position) {
+        bottomNavigationPosition = position;
 
+        switch (position) {
+            case 0:
+                replaceFragment(swipeMenuListFragment);
+                break;
+            case 1:
+                expandableListFragment.setGroupList(swipeMenuListFragment.getSwipeMenuItemList());//将场景列表中的内容传到设备列表里
+                replaceFragment(expandableListFragment);
+                break;
+        }
         LogUtil.d("onTabSelected" + position);
     }
 

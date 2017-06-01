@@ -77,6 +77,15 @@ public class Constant {
     public static final String MODIFYTXT = "修改";
     public static final String LONGCLICKEIDT = "长按编辑";
     public static final String SWIPE_SENCE_KEY = "sence";
+    public static final String SWIPE_DIVICE_KEY = "divice";
+
+    public static final String SENCE_NAME = "场景名称";
+    public static final String DEVICE_NAME = "设备名称";
+    public static final String EDIT_SENCE_NAME = "修改场景名称";
+    public static final String EDIT_DEVICE_NAME = "修改设备名称";
+    public static final String CONFIRM = "确定";
+    public static final String CANCEL = "取消";
+
 
     public static final int WEATHER_CALL_BACK = 1;
     public static final int WEATHER_EMPTY = 2;

@@ -44,7 +44,7 @@ public class ListViewAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ListViewAdapter extends BaseAdapter {
             viewHolder = new ViewHolder();
             convertView = layoutInflater.inflate(R.layout.swipe_menu_list_view_item, null);
             viewHolder.senceText = (TextView) convertView.findViewById(R.id.sence_text);
-            convertView.setTag(viewHolder);
+                convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }

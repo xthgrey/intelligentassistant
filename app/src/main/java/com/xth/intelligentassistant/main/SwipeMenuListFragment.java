@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -22,8 +23,12 @@ import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.xth.intelligentassistant.R;
+import com.xth.intelligentassistant.db.OperateDB;
+import com.xth.intelligentassistant.db.Sence;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
+
+import org.litepal.crud.DataSupport;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,22 +42,17 @@ import java.util.Map;
  * Created by XTH on 2017/5/25.
  */
 
-public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView.OnMenuItemClickListener,SwipeMenuListView.OnSwipeListener,SwipeMenuListView.OnItemLongClickListener{
+public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView.OnMenuItemClickListener, SwipeMenuListView.OnSwipeListener, SwipeMenuListView.OnItemLongClickListener {
     private Context context;
     private SwipeMenuListView swipeMenuListView;
 
     private SwipeMenuCreator creator;
-    private String sence;
     private List<Map<String, Object>> swipeMenuItemList;
-    private Map<String,Object> swipeMenuItemMap;
-    private  ListViewAdapter adapter;
+    private Map<String, Object> swipeMenuItemMap;
+    private ListViewAdapter adapter;
 
-    public String getSence() {
-        return sence;
-    }
-
-    public void setSence(String sence) {
-        this.sence = sence;
+    public List<Map<String, Object>> getSwipeMenuItemList() {
+        return swipeMenuItemList;
     }
 
     @Override
@@ -60,11 +60,20 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
         super.onCreate(savedInstanceState);
         context = getActivity();
         swipeMenuItemList = new ArrayList<Map<String, Object>>();
+        List<Sence> senceList = DataSupport.findAll(Sence.class);
+        for (Sence sence:senceList){
+            swipeMenuItemMap = new HashMap<String, Object>();
+            swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, sence.getSenceName());
+            swipeMenuItemList.add(swipeMenuItemMap);
+        }
     }
-    public void swipeViewAddItem(String key,Object value) {
+
+    public void swipeViewAddItem(String key, Object value) {
         swipeMenuItemMap = new HashMap<String, Object>();
         swipeMenuItemMap.put(key, value);
         swipeMenuItemList.add(swipeMenuItemMap);
+
+        OperateDB.addName(new Sence(),(String)value);
 
         adapter.notifyDataSetChanged();
         swipeMenuListView.smoothScrollToPosition(swipeMenuItemList.size() - 1);
@@ -108,7 +117,7 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 menu.addMenuItem(deleteItem);
             }
         };
-        swipeMenuListView = (SwipeMenuListView)view.findViewById(R.id.main_swipe_menu_list_view);
+        swipeMenuListView = (SwipeMenuListView) view.findViewById(R.id.main_swipe_menu_list_view);
         swipeMenuListView.setMenuCreator(creator);
         // Right
         swipeMenuListView.setSwipeDirection(SwipeMenuListView.DIRECTION_LEFT);
@@ -119,10 +128,11 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
         //设置选项长按监听
         swipeMenuListView.setOnItemLongClickListener(this);
 
-        adapter = new ListViewAdapter(context,swipeMenuItemList);
+        adapter = new ListViewAdapter(context, swipeMenuItemList);
         swipeMenuListView.setAdapter(adapter);
         return view;
     }
+
     private int dp2px(float dp) {
         final float scale = getResources().getDisplayMetrics().density;
         return (int) (dp * scale + 0.5f);
@@ -130,37 +140,54 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
 
     @Override
     public boolean onMenuItemClick(int position, SwipeMenu menu, int index) {
-        switch (index){
+        switch (index) {
             case Constant.MODIFY:
                 swipeMenuItemMap = swipeMenuItemList.get(position);
-                editName(swipeMenuItemMap);
+                swipeMenuItemMap = editName(swipeMenuItemMap);
+                swipeMenuItemList.set(position, swipeMenuItemMap);
+                OperateDB.modificateName(new Sence(), (String) swipeMenuItemMap.get(position),position);
                 break;
             case Constant.DELETE:
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
+                OperateDB.deleteName(new Sence(),position);
                 break;
         }
         return false;
     }
-    private void editName(final Map<String,Object> swipeMenuItemMap){
-        final EditText et = new EditText(context);
-        et.setText((String)swipeMenuItemMap.get(Constant.SWIPE_SENCE_KEY));
+
+    private Map<String, Object> editName(final Map<String, Object> swipeMenuItemMap) {
+        View view = View.inflate(context, R.layout.alert_dialog_layout, null);
+        final EditText alertDialogEdit = (EditText) view.findViewById(R.id.alert_dialog_edit);
+        alertDialogEdit.setText((String) swipeMenuItemMap.get(Constant.SWIPE_SENCE_KEY));
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("修改场景名称");
-        builder.setView(et);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setTitle(Constant.EDIT_SENCE_NAME);
+        builder.setPositiveButton(Constant.CONFIRM, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String s = et.getText().toString();
+                String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
                 if (!"".equals(s)) {
-                    swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY,s);
+                    swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
                     adapter.notifyDataSetChanged();
                 }
             }
         });
-        builder.setNegativeButton("取消", null);
-        builder.show();
+        builder.setNegativeButton(Constant.CANCEL, null);
+        AlertDialog tempDialog = builder.create();
+        tempDialog.setView(view, 0, 0, 0, 0);
+        /** 3.自动弹出软键盘 **/
+        tempDialog.setOnShowListener(new AlertDialog.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(alertDialogEdit, InputMethodManager.SHOW_IMPLICIT);
+
+            }
+        });
+        tempDialog.show();
+        return swipeMenuItemMap;
     }
 
     @Override
