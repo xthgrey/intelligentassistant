@@ -69,11 +69,10 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
     }
 
     public void swipeViewAddItem(String key, Object value) {
+        OperateDB.addName(new Sence(),(String)value);
         swipeMenuItemMap = new HashMap<String, Object>();
         swipeMenuItemMap.put(key, value);
         swipeMenuItemList.add(swipeMenuItemMap);
-
-        OperateDB.addName(new Sence(),(String)value);
 
         adapter.notifyDataSetChanged();
         swipeMenuListView.smoothScrollToPosition(swipeMenuItemList.size() - 1);
@@ -140,26 +139,27 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
 
     @Override
     public boolean onMenuItemClick(int position, SwipeMenu menu, int index) {
+        LogUtil.d(position+"");
         switch (index) {
             case Constant.MODIFY:
                 swipeMenuItemMap = swipeMenuItemList.get(position);
-                swipeMenuItemMap = editName(swipeMenuItemMap);
-                swipeMenuItemList.set(position, swipeMenuItemMap);
-                OperateDB.modificateName(new Sence(), (String) swipeMenuItemMap.get(position),position);
+                editName(swipeMenuItemMap,position);
                 break;
             case Constant.DELETE:
+                OperateDB.deleteName((String)swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY),position);
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
-                OperateDB.deleteName(new Sence(),position);
                 break;
         }
         return false;
     }
 
-    private Map<String, Object> editName(final Map<String, Object> swipeMenuItemMap) {
+    private void editName(final Map<String, Object> swipeMenuItemMap, final int position) {
         View view = View.inflate(context, R.layout.alert_dialog_layout, null);
         final EditText alertDialogEdit = (EditText) view.findViewById(R.id.alert_dialog_edit);
-        alertDialogEdit.setText((String) swipeMenuItemMap.get(Constant.SWIPE_SENCE_KEY));
+        final String oldName = (String) swipeMenuItemMap.get(Constant.SWIPE_SENCE_KEY);
+        alertDialogEdit.setText(oldName);
+        alertDialogEdit.setSelection(oldName.length());//将光标移至文字末尾
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(Constant.EDIT_SENCE_NAME);
         builder.setPositiveButton(Constant.CONFIRM, new DialogInterface.OnClickListener() {
@@ -168,7 +168,9 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
                 if (!"".equals(s)) {
+                    OperateDB.updateName(new Sence(), s,oldName);
                     swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
+                    swipeMenuItemList.set(position, swipeMenuItemMap);
                     adapter.notifyDataSetChanged();
                 }
             }
@@ -183,26 +185,21 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
             public void onShow(DialogInterface dialog) {
                 InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(alertDialogEdit, InputMethodManager.SHOW_IMPLICIT);
-
             }
         });
         tempDialog.show();
-        return swipeMenuItemMap;
     }
 
     @Override
     public void onSwipeStart(int position) {
-        LogUtil.d("onSwipeStart");
     }
 
     @Override
     public void onSwipeEnd(int position) {
-        LogUtil.d("onSwipeEnd");
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
         return true;
     }
 }

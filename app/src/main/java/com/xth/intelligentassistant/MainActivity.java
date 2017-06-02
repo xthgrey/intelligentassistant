@@ -396,19 +396,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 replaceFragment(expandableListFragment);
                 break;
         }
-        LogUtil.d("onTabSelected" + position);
     }
 
     @Override
     public void onTabUnselected(int position) {
 
-        LogUtil.d("onTabUnselected" + position);
     }
 
     @Override
     public void onTabReselected(int position) {
 
-        LogUtil.d("onTabReselected" + position);
     }
 
     private void replaceFragment(Fragment fragment) {
