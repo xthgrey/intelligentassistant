@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -18,6 +19,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -343,9 +345,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                     if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_SUCCESS) {
                         String result = bundle.getString(CodeUtils.RESULT_STRING);
-                        Toast.makeText(this, "解析结果:" + result, Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, Constant.ANALYSIS + result, Toast.LENGTH_LONG).show();
                     } else if (bundle.getInt(CodeUtils.RESULT_TYPE) == CodeUtils.RESULT_FAILED) {
-                        Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, Constant.ERROR_ANALYZE, Toast.LENGTH_LONG).show();
                     }
                 }
                 break;
@@ -356,15 +358,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     try {
                         Bitmap mBitmap = MediaStore.Images.Media.getBitmap(cr, uri);//显得到bitmap图片
 
-                        CodeUtils.analyzeBitmap(String.valueOf(mBitmap), new CodeUtils.AnalyzeCallback() {
+                        // 好像是android多媒体数据库的封装接口，具体的看Android文档
+                        CursorLoader cursorLoader = new CursorLoader(this, uri, null, null, null, null);
+                        Cursor cursor = cursorLoader.loadInBackground();
+                        // 按我个人理解 这个是获得用户选择的图片的索引值
+                        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                        // 将光标移至开头 ，这个很重要，不小心很容易引起越界
+                        cursor.moveToFirst();
+                        // 最后根据索引值获取图片路径
+                        String path = cursor.getString(column_index);
+                        LogUtil.d(path);
+                        CodeUtils.analyzeBitmap(path, new CodeUtils.AnalyzeCallback() {
                             @Override
                             public void onAnalyzeSuccess(Bitmap mBitmap, String result) {
-                                Toast.makeText(MainActivity.this, "解析结果:" + result, Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, Constant.ANALYSIS + result, Toast.LENGTH_LONG).show();
                             }
 
                             @Override
                             public void onAnalyzeFailed() {
-                                Toast.makeText(MainActivity.this, "解析二维码失败", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, Constant.ERROR_ANALYZE, Toast.LENGTH_LONG).show();
                             }
                         });
 

@@ -62,7 +62,6 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
         super.onCreate(savedInstanceState);
         context = getActivity();
         groupChildLists = new ArrayList<>();
-        LogUtil.e(groupList.size() + "");
         for (int i = 0; i < groupList.size(); i++) {
             List<Map<String, Object>> expandMenuItemList = new ArrayList<>();
             List<Device> deviceList = DataSupport.findAll(Device.class);
@@ -183,8 +182,6 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
         expandMenuItemMap = new HashMap<String, Object>();
         expandMenuItemMap.put(key, value);
         groupChildLists.get(groupPosition).add(expandMenuItemMap);//子项列表添加内容
-
-        LogUtil.i((String) groupList.get(groupPosition).get(Constant.SWIPE_SENCE_KEY));
 
         adapter.notifyDataSetChanged();
         expandableListView.expandGroup(groupPosition);

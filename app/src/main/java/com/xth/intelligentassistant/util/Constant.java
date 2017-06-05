@@ -59,6 +59,8 @@ public class Constant {
     public static final String CALL = "呼叫";
     public static final String CALLING = "正在呼叫";
     public static final String SCAN = "扫一扫";
+    public static final String ANALYSIS = "解析结果:";
+    public static final String ERROR_ANALYZE = "解析失败";
 
     public static final String WEATHERADDRESS = "https://free-api.heweather.com/v5/now?city=";
     public static final String WEATHERKEY = "&key=03f0e8903449476fa99331976a24ac6a";
