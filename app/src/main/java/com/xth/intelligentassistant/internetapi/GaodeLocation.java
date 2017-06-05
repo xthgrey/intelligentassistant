@@ -30,18 +30,18 @@ public class GaodeLocation implements AMapLocationListener {
     private String locationCity;
     private String locationCounty;
 
-    public HttpUtiil getHttpUtiil() {
-        return httpUtiil;
+
+
+    private HttpUtiil httpUtil;
+    public HttpUtiil getHttpUtil() {
+        return httpUtil;
     }
-
-    private HttpUtiil httpUtiil;
-
     public String getDetailAdress() {
         return detailAdress;
     }
 
     public GaodeLocation(Context context) {
-        httpUtiil = new HttpUtiil();
+        httpUtil = new HttpUtiil();
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 4);
         }
@@ -78,7 +78,7 @@ public class GaodeLocation implements AMapLocationListener {
                 detailAdress = aMapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
                 locationCity = aMapLocation.getCity();//城市信息
                 locationCounty = aMapLocation.getDistrict();//城区信息
-                httpUtiil.queryWeather(locationCity,locationCounty);
+                httpUtil.queryWeather(locationCity,locationCounty);
                 Toast.makeText(context, Constant.MAP_LOCATION_TIP + aMapLocation.getAddress(),Toast.LENGTH_LONG).show();
             }else {
                 //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。

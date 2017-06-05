@@ -91,6 +91,7 @@ public class Constant {
     public static final String ERROR_DEVICE_NAME = "警告：相同场景设备名不能相同";
     public static final String ERROR_EMPTY_NAME = "警告：名字不能是空白的";
 
+    public static final String BING_PIC = "https://cn.bing.com/az/hprichbg/rb/KaprunDam_ZH-CN9638804777_1920x1080.jpg";
 
     public static final int WEATHER_CALL_BACK = 1;
     public static final int WEATHER_EMPTY = 2;

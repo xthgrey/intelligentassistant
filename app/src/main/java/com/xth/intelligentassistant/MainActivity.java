@@ -37,6 +37,7 @@ import android.widget.Toast;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
+import com.bumptech.glide.Glide;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 import com.xth.intelligentassistant.db.Device;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private int bottomNavigationPosition;
 
+    private ImageView bingPic;
     private Toolbar toolBar;//标题栏
     private DrawerLayout drawerLayout;//抽屉布局
     private NavigationView navigationView;//抽屉中的导航布局
@@ -80,18 +82,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Constant.WEATHER_CALL_BACK:
-                    weatherCity.setText(gaodeLocation.getHttpUtiil().getWeather().getCity());
+                    weatherCity.setText(gaodeLocation.getHttpUtil().getWeather().getCity());
                     try {
-                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHttpUtiil().getWeather().getCondcode() + Constant.PNG);
+                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHttpUtil().getWeather().getCondcode() + Constant.PNG);
                         Bitmap bmp = BitmapFactory.decodeStream(in);
                         weatherCondCode.setImageBitmap(bmp);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    weatherTmp.setText(gaodeLocation.getHttpUtiil().getWeather().getTmp());
-                    weatherCounty.setText(gaodeLocation.getHttpUtiil().getWeather().getCounty());
-                    weatherCondTxt.setText(gaodeLocation.getHttpUtiil().getWeather().getCondText());
-                    weatherCondHum.setText(gaodeLocation.getHttpUtiil().getWeather().getHum());
+                    weatherTmp.setText(gaodeLocation.getHttpUtil().getWeather().getTmp());
+                    weatherCounty.setText(gaodeLocation.getHttpUtil().getWeather().getCounty());
+                    weatherCondTxt.setText(gaodeLocation.getHttpUtil().getWeather().getCondText());
+                    weatherCondHum.setText(gaodeLocation.getHttpUtil().getWeather().getHum());
                     break;
                 case Constant.WEATHER_EMPTY:
                 case Constant.WEATHER_REQUEST_ERROR:
@@ -188,8 +190,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         applyForPermission();
-        initData();
         initUI();
+        initData();
     }
 
     private void initData() {
@@ -203,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         ZXingLibrary.initDisplayOpinion(this);
         bottomNavigationPosition = 0;
+        locationAndWeatherUpdate();
     }
 
     //运行时权限申请授权处理
@@ -234,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initUI() {
-
+        bingPic = (ImageView)findViewById(R.id.main_bing_pic);
         toolBar = (Toolbar) findViewById(R.id.main_layout_toolbar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.main_navigate_view);
@@ -250,6 +253,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         swipeMenuListFragment = new SwipeMenuListFragment();
         expandableListFragment = new ExpandableListFragment();
+
+        Glide.with(this).load(Constant.BING_PIC).into(bingPic);//加载必应图片
 
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加toolbar导航栏
@@ -292,45 +297,48 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.main_menu_friends:
                 break;
             case R.id.main_menu_location:
-                gaodeLocation = new GaodeLocation(this);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Message message = new Message();
-                        while (true) {
-                            int callBackFlag = gaodeLocation.getHttpUtiil().getWeatherCallBackFlag();
-                            switch (callBackFlag) {
-                                case Constant.WEATHER_CALL_BACK:
-                                    message.what = Constant.WEATHER_CALL_BACK;
-                                    handler.sendMessage(message);
-                                    break;
-                                case Constant.WEATHER_EMPTY:
-                                    message.what = Constant.WEATHER_EMPTY;
-                                    handler.sendMessage(message);
-                                    break;
-                                case Constant.WEATHER_REQUEST_ERROR:
-                                    message.what = Constant.WEATHER_EMPTY;
-                                    handler.sendMessage(message);
-                                    break;
-                                default:
-                                    try {
-                                        Thread.sleep(1000);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                    break;
-                            }
-                            if (callBackFlag != 0) {
-                                break;
-                            }
-                        }
-                    }
-                }).start();
+                locationAndWeatherUpdate();
                 break;
             default:
                 break;
         }
         return true;
+    }
+    private void locationAndWeatherUpdate(){
+        gaodeLocation = new GaodeLocation(this);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                while (true) {
+                    int callBackFlag = gaodeLocation.getHttpUtil().getWeatherCallBackFlag();
+                    switch (callBackFlag) {
+                        case Constant.WEATHER_CALL_BACK:
+                            message.what = Constant.WEATHER_CALL_BACK;
+                            handler.sendMessage(message);
+                            break;
+                        case Constant.WEATHER_EMPTY:
+                            message.what = Constant.WEATHER_EMPTY;
+                            handler.sendMessage(message);
+                            break;
+                        case Constant.WEATHER_REQUEST_ERROR:
+                            message.what = Constant.WEATHER_EMPTY;
+                            handler.sendMessage(message);
+                            break;
+                        default:
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                    }
+                    if (callBackFlag != 0) {
+                        break;
+                    }
+                }
+            }
+        }).start();
     }
 
     @Override
