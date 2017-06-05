@@ -140,21 +140,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
                 if (!"".equals(s)) {
-                    switch (title){
+                    switch (title) {
                         case Constant.SENCE_NAME:
-                            if(swipeMenuListFragment.isHaveInDB(s)){
-                                Toast.makeText(MainActivity.this,Constant.ERROR_SENCE_NAME,Toast.LENGTH_SHORT).show();
-                            }else{
+                            if (OperateDB.isHaveInDB(s)) {
+                                Toast.makeText(MainActivity.this, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
+                            } else {
                                 swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
                             }
-                            LogUtil.d("swipeMenuListFragment"+ swipeMenuListFragment.isHaveInDB(s));
                             break;
                         case Constant.DEVICE_NAME:
-                            expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, alertDialogEdit.getText().toString());
+                            if (OperateDB.isHaveInDB((String) expandableListFragment.getGroupList().get(expandableListFragment.getGroupPosition()).get(Constant.SWIPE_SENCE_KEY), s)) {
+                                Toast.makeText(MainActivity.this, Constant.ERROR_DEVICE_NAME, Toast.LENGTH_SHORT).show();
+                            } else {
+                                expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, alertDialogEdit.getText().toString());
+                            }
                             break;
                         default:
                             break;
                     }
+                } else {
+                    Toast.makeText(MainActivity.this, Constant.ERROR_EMPTY_NAME, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -188,11 +193,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void initData() {
         List<Sence> senceList = DataSupport.findAll(Sence.class);
         List<Device> deviceList = DataSupport.findAll(Device.class);
-        for (Sence sence:senceList){
+        for (Sence sence : senceList) {
             LogUtil.d("initData Sence: " + sence.getSenceName());
         }
-        for (Device device:deviceList){
-            LogUtil.d("initData DeviceSence：" + device.getSenceName()+"::"+device.getDeviceName());
+        for (Device device : deviceList) {
+            LogUtil.d("initData DeviceSence：" + device.getSenceName() + "::" + device.getDeviceName());
         }
         ZXingLibrary.initDisplayOpinion(this);
         bottomNavigationPosition = 0;
@@ -254,8 +259,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         //设置底部导航子项
         bottomNavigationBar
-                .addItem(new BottomNavigationItem(R.drawable.main_home_location, "房间定位"))
-                .addItem(new BottomNavigationItem(R.drawable.main_home_device, "设备"))
+                .addItem(new BottomNavigationItem(R.drawable.main_home_location, Constant.SENCE_NAME))
+                .addItem(new BottomNavigationItem(R.drawable.main_home_device, Constant.DEVICE_NAME))
                 .initialise();
         //主界面list view显示布局
         replaceFragment(swipeMenuListFragment);

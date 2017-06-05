@@ -1,19 +1,16 @@
 package com.xth.intelligentassistant.main;
 
-import android.content.ClipData;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
-import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,37 +81,35 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+        LogUtil.d("getGroupView" + groupPosition);
         ViewHolderGroup groupHolder;
         if (convertView == null) {
             convertView = LayoutInflater.from(mContext).inflate(
                     R.layout.expand_list_view_group, parent, false);
             groupHolder = new ViewHolderGroup();
             groupHolder.expandListViewGroupText = (TextView) convertView.findViewById(R.id.expand_list_view_group_name);
-            convertView.setTag(R.id.groupposition,groupPosition);
-            convertView.setTag(R.id.childposition,-1);
             convertView.setTag(groupHolder);
         } else {
             groupHolder = (ViewHolderGroup) convertView.getTag();
         }
-        groupHolder.expandListViewGroupText.setText((String)gData.get(groupPosition).get(Constant.SWIPE_SENCE_KEY));
+        groupHolder.expandListViewGroupText.setText((String) gData.get(groupPosition).get(Constant.SWIPE_SENCE_KEY));
         return convertView;
     }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+        LogUtil.d("getChildView" + groupPosition + ":::" + childPosition);
         ViewHolderItem itemHolder;
         if (convertView == null) {
             convertView = LayoutInflater.from(mContext).inflate(
                     R.layout.expand_list_view_group_child, parent, false);
             itemHolder = new ViewHolderItem();
             itemHolder.expandListViewGroupChildText = (TextView) convertView.findViewById(R.id.expand_list_view_group_child_name);
-            convertView.setTag(R.id.groupposition,groupPosition);
-            convertView.setTag(R.id.childposition,childPosition);
             convertView.setTag(itemHolder);
         } else {
             itemHolder = (ViewHolderItem) convertView.getTag();
         }
-        itemHolder.expandListViewGroupChildText.setText((String)iData.get(groupPosition).get(childPosition).get(Constant.SWIPE_DIVICE_KEY));
+        itemHolder.expandListViewGroupChildText.setText((String) iData.get(groupPosition).get(childPosition).get(Constant.SWIPE_DIVICE_KEY));
         return convertView;
     }
 

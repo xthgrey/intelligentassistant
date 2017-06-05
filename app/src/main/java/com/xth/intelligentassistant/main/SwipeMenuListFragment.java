@@ -1,12 +1,10 @@
 package com.xth.intelligentassistant.main;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -15,8 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -24,7 +20,6 @@ import com.baoyz.swipemenulistview.SwipeMenu;
 import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
-import com.xth.intelligentassistant.MainActivity;
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.db.OperateDB;
 import com.xth.intelligentassistant.db.Sence;
@@ -34,11 +29,8 @@ import com.xth.intelligentassistant.util.LogUtil;
 import org.litepal.crud.DataSupport;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 /**
@@ -65,24 +57,16 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
         context = getActivity();
         swipeMenuItemList = new ArrayList<Map<String, Object>>();
         List<Sence> senceList = DataSupport.findAll(Sence.class);
-        for (Sence sence:senceList){
+        for (Sence sence : senceList) {
             swipeMenuItemMap = new HashMap<String, Object>();
             swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, sence.getSenceName());
             swipeMenuItemList.add(swipeMenuItemMap);
         }
     }
-    public Boolean isHaveInDB(String senceName){
-        for (Sence sence:DataSupport.findAll(Sence.class)){
-            LogUtil.d(sence.getSenceName() +"::::"+ senceName);
-            if(sence.getSenceName().equals(senceName)){
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     public void swipeViewAddItem(String key, Object value) {
-        OperateDB.addName(new Sence(),(String)value);
+        OperateDB.addName(new Sence(), (String) value);
         swipeMenuItemMap = new HashMap<String, Object>();
         swipeMenuItemMap.put(key, value);
         swipeMenuItemList.add(swipeMenuItemMap);
@@ -152,14 +136,14 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
 
     @Override
     public boolean onMenuItemClick(int position, SwipeMenu menu, int index) {
-        LogUtil.d(position+"");
+        LogUtil.d(position + "");
         switch (index) {
             case Constant.MODIFY:
                 swipeMenuItemMap = swipeMenuItemList.get(position);
-                editName(swipeMenuItemMap,position);
+                editName(swipeMenuItemMap, position);
                 break;
             case Constant.DELETE:
-                OperateDB.deleteName((String)swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY));
+                OperateDB.deleteName((String) swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY));
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
                 break;
@@ -180,15 +164,19 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
             public void onClick(DialogInterface dialog, int which) {
                 String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
-                if (!"".equals(s)) {
-                    if(isHaveInDB(s)){
-                        Toast.makeText(context,Constant.ERROR_SENCE_NAME,Toast.LENGTH_SHORT).show();
-                    }else{
-                        OperateDB.updateName(new Sence(), s,oldName);
+                if(s.equals(oldName)){
+
+                } else if (!"".equals(s)) {
+                    if (OperateDB.isHaveInDB(s)) {
+                        Toast.makeText(context, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
+                    } else {
+                        OperateDB.updateName(new Sence(), s, oldName);
                         swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
                         swipeMenuItemList.set(position, swipeMenuItemMap);
                         adapter.notifyDataSetChanged();
                     }
+                } else {
+                    Toast.makeText(context, Constant.ERROR_EMPTY_NAME, Toast.LENGTH_SHORT).show();
                 }
             }
         });

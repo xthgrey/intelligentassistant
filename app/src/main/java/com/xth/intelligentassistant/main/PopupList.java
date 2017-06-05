@@ -24,12 +24,14 @@ import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.xth.intelligentassistant.R;
+import com.xth.intelligentassistant.util.Constant;
+import com.xth.intelligentassistant.util.LogUtil;
 
 import java.util.List;
 
@@ -56,14 +58,14 @@ public class PopupList {
 
     private Context mContext;
     private PopupWindow mPopupWindow;
-    private View mAnchorView;
+    private ExpandableListView mAnchorView;
     private View mAdapterView;
     private View mContextView;
     private View mIndicatorView;
     private List<String> mPopupItemList;
     private PopupListListener mPopupListListener;
     private int mContextPosition;
-    private int groupPos; //参数值是在setTag时使用的对应资源id号
+    private int groupPos;
     private int childPos;
     private float mRawX;
     private float mRawY;
@@ -124,14 +126,14 @@ public class PopupList {
      * {@link View#setOnLongClickListener(View.OnLongClickListener)}(or
      * {@link AbsListView#setOnItemLongClickListener(AdapterView.OnItemLongClickListener)}
      * if anchorView is a instance of AbsListView), so you can only use
-     * {@link PopupList#showPopupListWindow(View, int, float, float, List, PopupListListener)}
+     * {@link PopupList#showPopupListWindow(ExpandableListView, int, float, float, List, PopupListListener)}
      * if you called those method before.
      *
      * @param anchorView        the view on which to pin the popup window
      * @param popupItemList     the list of the popup menu
      * @param popupListListener the Listener
      */
-    public void bind(View anchorView, List<String> popupItemList, PopupListListener popupListListener) {
+    public void bind(ExpandableListView anchorView, List<String> popupItemList, PopupListListener popupListListener) {
         this.mAnchorView = anchorView;
         this.mPopupItemList = popupItemList;
         this.mPopupListListener = popupListListener;
@@ -145,17 +147,18 @@ public class PopupList {
             }
         });
         if (mAnchorView instanceof AbsListView) {
-            ((AbsListView) mAnchorView).setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            mAnchorView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-                    groupPos = (Integer)view.getTag(R.id.groupposition); //参数值是在setTag时使用的对应资源id号
-                    childPos = (Integer)view.getTag(R.id.childposition);//子项为-1是表示点击了父项
+                    final long packedPosition = mAnchorView.getExpandableListPosition(position);
+                    groupPos = ExpandableListView.getPackedPositionGroup(packedPosition);
+                    childPos = ExpandableListView.getPackedPositionChild(packedPosition);
+                    LogUtil.d("showPopupList" + groupPos + ":::::" + childPos + "::");
                     if(childPos == -1){
-                        return false;//长按父项无效
+                        return false;
                     }
                     if (mPopupListListener != null
-                            && !mPopupListListener.showPopupList(parent, view, groupPos,childPos)) {
+                            && !mPopupListListener.showPopupList(parent, view, groupPos, childPos)){
                         return false;
                     }
                     mAdapterView = parent;
@@ -192,7 +195,7 @@ public class PopupList {
      * @param popupItemList     the list of the popup menu
      * @param popupListListener the Listener
      */
-    public void showPopupListWindow(View anchorView, int contextPosition, float rawX, float rawY, List<String> popupItemList, PopupListListener popupListListener) {
+    public void showPopupListWindow(ExpandableListView anchorView, int contextPosition, float rawX, float rawY, List<String> popupItemList, PopupListListener popupListListener) {
         this.mAnchorView = anchorView;
         this.mPopupItemList = popupItemList;
         this.mPopupListListener = popupListListener;
@@ -254,7 +257,7 @@ public class PopupList {
                 });
                 if (mPopupListListener instanceof AdapterPopupListListener) {
                     AdapterPopupListListener adapterPopupListListener = (AdapterPopupListListener) mPopupListListener;
-                    textView.setText(adapterPopupListListener.formatText(mAdapterView, mContextView, groupPos,childPos, i, mPopupItemList.get(i)));
+                    textView.setText(adapterPopupListListener.formatText(mAdapterView, mContextView, groupPos,groupPos, i, mPopupItemList.get(i)));
                 } else {
                     textView.setText(mPopupItemList.get(i));
                 }
@@ -644,14 +647,15 @@ public class PopupList {
 
     public interface PopupListListener {
 
-        boolean showPopupList(View adapterView, View contextView, int groupPos,int childPos);
 
-        void onPopupListClick(View contextView, int groupPos,int childPos, int position);
+        boolean showPopupList(View adapterView, View contextView, int groupPos, int childPos);
+
+
+        void onPopupListClick(View contextView, int groupPos, int childPos,int position);
     }
 
     public interface AdapterPopupListListener extends PopupListListener {
-        String formatText(View adapterView, View contextView, int contextPosition, int position, String text);
-        String formatText(View adapterView, View contextView, int groupPos,int childPos, int position, String text);
+        String formatText(View adapterView, View contextView, int groupPos, int childPos,int position, String text);
     }
 
 }

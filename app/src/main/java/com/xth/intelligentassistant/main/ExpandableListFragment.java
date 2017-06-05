@@ -14,11 +14,9 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
-import com.baidu.tts.loopj.LogHandler;
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.db.Device;
 import com.xth.intelligentassistant.db.OperateDB;
-import com.xth.intelligentassistant.db.Sence;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
@@ -49,6 +47,14 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
 
     public void setGroupList(List<Map<String, Object>> groupList) {
         this.groupList = groupList;
+    }
+
+    public List<Map<String, Object>> getGroupList() {
+        return groupList;
+    }
+
+    public int getGroupPosition() {
+        return groupPosition;
     }
 
     @Override
@@ -86,20 +92,18 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
         popupList.bind(expandableListView, popupMenuItemList, new PopupList.PopupListListener() {
             @Override
             public boolean showPopupList(View adapterView, View contextView, int groupPos, int childPos) {
-                //长按列表项时执行，groupPos为 expandableListView 父项，从0开始；childPos expandableListView 子项，从0开始
                 return true;
             }
 
             @Override
             public void onPopupListClick(View contextView, int groupPos, int childPos, int position) {
-                //点击气泡，groupPos为 expandableListView 父项，从0开始；childPos expandableListView 子项，从0开始；position是 popupMenuItemList 绑定列表的index
                 switch (position) {
                     case Constant.MODIFY://修改
                         expandMenuItemMap = groupChildLists.get(groupPos).get(childPos);
-                        editName(expandMenuItemMap,groupPos,childPos);
+                        editName(expandMenuItemMap, groupPos, childPos);
                         break;
                     case Constant.DELETE://删除
-                        OperateDB.deleteName((String)groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY),(String) groupChildLists.get(groupPos).get(childPos).get(Constant.SWIPE_DIVICE_KEY));
+                        OperateDB.deleteName((String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY), (String) groupChildLists.get(groupPos).get(childPos).get(Constant.SWIPE_DIVICE_KEY));
                         groupChildLists.get(groupPos).remove(childPos);
                         adapter.notifyDataSetChanged();
                         break;
@@ -107,10 +111,12 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
             }
         });
     }
-    private void editName(final Map<String, Object> expandMenuItemMap, final int groupPos,final int childPos) {
+
+    private void editName(final Map<String, Object> expandMenuItemMap, final int groupPos, final int childPos) {
         View view = View.inflate(context, R.layout.alert_dialog_layout, null);
         final EditText alertDialogEdit = (EditText) view.findViewById(R.id.alert_dialog_edit);
         final String oldName = (String) expandMenuItemMap.get(Constant.SWIPE_DIVICE_KEY);
+        LogUtil.d(groupPos+":::::"+childPos+"::"+expandMenuItemMap.get(Constant.SWIPE_DIVICE_KEY));
         alertDialogEdit.setText(oldName);
         alertDialogEdit.setSelection(oldName.length());//将光标移至文字末尾
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -120,12 +126,26 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
             public void onClick(DialogInterface dialog, int which) {
                 String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
-                if (!"".equals(s)) {
-                    OperateDB.updateName(new Device(),(String)groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY),s);//修改弹窗
-                    expandMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
-                    groupChildLists.get(groupPos).set(childPos,expandMenuItemMap);//子项列表中的子列表内容更新
-                    groupChildLists.set(groupPos,groupChildLists.get(groupPos));//子项列表更新其子列表
-                    adapter.notifyDataSetChanged();
+                if(s.equals(oldName)){
+
+                }else if (!"".equals(s)) {
+                    if (OperateDB.isHaveInDB((String) groupList.get(groupPosition).get(Constant.SWIPE_SENCE_KEY), s)) {
+                        Toast.makeText(context, Constant.ERROR_DEVICE_NAME, Toast.LENGTH_SHORT).show();
+                    } else {
+                        OperateDB.updateName(new Device(), (String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY), oldName, s);//修改弹窗
+                        expandMenuItemMap.put(Constant.SWIPE_DIVICE_KEY, s);
+                        List<Map<String, Object>> expandMenuItemList = groupChildLists.get(groupPos);
+                        expandMenuItemList.set(childPos, expandMenuItemMap);//子项列表中的子列表内容更新
+                        groupChildLists.set(groupPos, expandMenuItemList);//子项列表更新其子列表
+                        for (List<Map<String, Object>> list : groupChildLists) {
+                            for (Map<String, Object> map : list) {
+                                LogUtil.d((String) map.get(Constant.SWIPE_DIVICE_KEY));
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
+                } else {
+                    Toast.makeText(context, Constant.ERROR_EMPTY_NAME, Toast.LENGTH_SHORT).show();
                 }
             }
         });
