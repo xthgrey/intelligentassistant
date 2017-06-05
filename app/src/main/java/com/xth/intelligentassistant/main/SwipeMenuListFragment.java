@@ -16,12 +16,15 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.baoyz.swipemenulistview.SwipeMenu;
 import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
+import com.xth.intelligentassistant.MainActivity;
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.db.OperateDB;
 import com.xth.intelligentassistant.db.Sence;
@@ -57,6 +60,7 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        LogUtil.d("SwipeMenuListFragment onCreate");
         super.onCreate(savedInstanceState);
         context = getActivity();
         swipeMenuItemList = new ArrayList<Map<String, Object>>();
@@ -66,6 +70,15 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
             swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, sence.getSenceName());
             swipeMenuItemList.add(swipeMenuItemMap);
         }
+    }
+    public Boolean isHaveInDB(String senceName){
+        for (Sence sence:DataSupport.findAll(Sence.class)){
+            LogUtil.d(sence.getSenceName() +"::::"+ senceName);
+            if(sence.getSenceName().equals(senceName)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void swipeViewAddItem(String key, Object value) {
@@ -146,7 +159,7 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 editName(swipeMenuItemMap,position);
                 break;
             case Constant.DELETE:
-                OperateDB.deleteName((String)swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY),position);
+                OperateDB.deleteName((String)swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY));
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
                 break;
@@ -168,10 +181,14 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 String s = alertDialogEdit.getText().toString();
                 s = s.replaceAll("\\s", "");
                 if (!"".equals(s)) {
-                    OperateDB.updateName(new Sence(), s,oldName);
-                    swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
-                    swipeMenuItemList.set(position, swipeMenuItemMap);
-                    adapter.notifyDataSetChanged();
+                    if(isHaveInDB(s)){
+                        Toast.makeText(context,Constant.ERROR_SENCE_NAME,Toast.LENGTH_SHORT).show();
+                    }else{
+                        OperateDB.updateName(new Sence(), s,oldName);
+                        swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
+                        swipeMenuItemList.set(position, swipeMenuItemMap);
+                        adapter.notifyDataSetChanged();
+                    }
                 }
             }
         });

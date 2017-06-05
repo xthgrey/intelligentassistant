@@ -28,17 +28,17 @@ public class OperateDB {
         device.updateAll("sencename = ?",oldName);
     }
 
-    public static void updateName(Device device, String deviceName,int position) {
+    public static void updateName(Device device, String senceName,String deviceName) {
         device.setDeviceName(deviceName);
-        device.update(position + 1);
+        device.updateAll("sencename = ?",senceName);
     }
 
-    public static void deleteName(String senceName, int position) {
-        DataSupport.delete(Sence.class, position + 1);
+    public static void deleteName(String senceName) {
+        DataSupport.deleteAll(Sence.class, "sencename = ?", senceName);
         DataSupport.deleteAll(Device.class, "sencename = ?", senceName);
     }
 
-    public static void deleteName(Device device, int position) {
-        DataSupport.delete(Device.class, position + 1);
+    public static void deleteName(String senceName,String deviceName) {
+        DataSupport.deleteAll(Device.class,"sencename = ? and devicename = ?",senceName, deviceName);
     }
 }

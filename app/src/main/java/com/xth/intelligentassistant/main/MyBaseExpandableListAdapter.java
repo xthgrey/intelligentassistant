@@ -79,7 +79,7 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public boolean hasStableIds() {
-        return false;
+        return true;
     }
 
     @Override
@@ -90,6 +90,8 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter {
                     R.layout.expand_list_view_group, parent, false);
             groupHolder = new ViewHolderGroup();
             groupHolder.expandListViewGroupText = (TextView) convertView.findViewById(R.id.expand_list_view_group_name);
+            convertView.setTag(R.id.groupposition,groupPosition);
+            convertView.setTag(R.id.childposition,-1);
             convertView.setTag(groupHolder);
         } else {
             groupHolder = (ViewHolderGroup) convertView.getTag();
@@ -106,6 +108,8 @@ public class MyBaseExpandableListAdapter extends BaseExpandableListAdapter {
                     R.layout.expand_list_view_group_child, parent, false);
             itemHolder = new ViewHolderItem();
             itemHolder.expandListViewGroupChildText = (TextView) convertView.findViewById(R.id.expand_list_view_group_child_name);
+            convertView.setTag(R.id.groupposition,groupPosition);
+            convertView.setTag(R.id.childposition,childPosition);
             convertView.setTag(itemHolder);
         } else {
             itemHolder = (ViewHolderItem) convertView.getTag();

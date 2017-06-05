@@ -142,7 +142,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (!"".equals(s)) {
                     switch (title){
                         case Constant.SENCE_NAME:
-                            swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
+                            if(swipeMenuListFragment.isHaveInDB(s)){
+                                Toast.makeText(MainActivity.this,Constant.ERROR_SENCE_NAME,Toast.LENGTH_SHORT).show();
+                            }else{
+                                swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
+                            }
+                            LogUtil.d("swipeMenuListFragment"+ swipeMenuListFragment.isHaveInDB(s));
                             break;
                         case Constant.DEVICE_NAME:
                             expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, alertDialogEdit.getText().toString());
@@ -187,10 +192,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             LogUtil.d("initData Sence: " + sence.getSenceName());
         }
         for (Device device:deviceList){
-            LogUtil.d("initData Device：" + device.getDeviceName());
-        }
-        for (Device device:deviceList){
-            LogUtil.d("initData DeviceSence：" + device.getSenceName());
+            LogUtil.d("initData DeviceSence：" + device.getSenceName()+"::"+device.getDeviceName());
         }
         ZXingLibrary.initDisplayOpinion(this);
         bottomNavigationPosition = 0;

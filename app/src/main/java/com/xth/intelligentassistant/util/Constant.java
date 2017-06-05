@@ -85,6 +85,7 @@ public class Constant {
     public static final String EDIT_DEVICE_NAME = "修改设备名称";
     public static final String CONFIRM = "确定";
     public static final String CANCEL = "取消";
+    public static final String ERROR_SENCE_NAME = "警告：场景名不能相同";
 
 
     public static final int WEATHER_CALL_BACK = 1;
