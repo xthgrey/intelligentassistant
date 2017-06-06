@@ -56,6 +56,9 @@
         <meta-data
             android:name="com.baidu.speech.SECRET_KEY"
             android:value="15004d92543351f67bf6873f9ec907ea" />
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="7e2bc40f84223efd9d54f197853a229a"/>
 
         <service
             android:name="com.baidu.speech.VoiceRecognitionService"
@@ -73,13 +76,9 @@
         <activity
             android:name=".DialogueActivity"
             android:launchMode="singleTask" />
-        <activity android:name=".CustomScanActivity" />
+        <!--<activity android:name=".CustomScanActivity" /> -->
 
         <uses-library android:name="android.test.runner" />
-
-        <meta-data
-            android:name="com.amap.api.v2.apikey"
-            android:value="7e2bc40f84223efd9d54f197853a229a" />
 
         <service android:name="com.amap.api.location.APSService" />
 
@@ -88,7 +87,9 @@
         <service
             android:name=".service.AutoUpdateService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true">
+
+        </service>
     </application>
 
 </manifest>
