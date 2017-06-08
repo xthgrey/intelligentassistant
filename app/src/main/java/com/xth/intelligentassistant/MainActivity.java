@@ -43,6 +43,7 @@ import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 import com.xth.intelligentassistant.db.Device;
 import com.xth.intelligentassistant.db.OperateDB;
 import com.xth.intelligentassistant.db.Sence;
+import com.xth.intelligentassistant.internetapi.BingPic;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
 import com.xth.intelligentassistant.main.ExpandableListFragment;
 import com.xth.intelligentassistant.main.SwipeMenuListFragment;
@@ -76,28 +77,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ExpandableListFragment expandableListFragment;
 
     private GaodeLocation gaodeLocation;//高德地图定位
+    private BingPic bingPicApi;
 
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Constant.WEATHER_CALL_BACK:
-                    weatherCity.setText(gaodeLocation.getHttpUtil().getWeather().getCity());
+                    weatherCity.setText(gaodeLocation.getHeWeather().getWeather().getCity());
                     try {
-                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHttpUtil().getWeather().getCondcode() + Constant.PNG);
+                        InputStream in = getResources().getAssets().open(Constant.WEATHER + "/" + Constant.WEATHER + gaodeLocation.getHeWeather().getWeather().getCondcode() + Constant.PNG);
                         Bitmap bmp = BitmapFactory.decodeStream(in);
                         weatherCondCode.setImageBitmap(bmp);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    weatherTmp.setText(gaodeLocation.getHttpUtil().getWeather().getTmp());
-                    weatherCounty.setText(gaodeLocation.getHttpUtil().getWeather().getCounty());
-                    weatherCondTxt.setText(gaodeLocation.getHttpUtil().getWeather().getCondText());
-                    weatherCondHum.setText(gaodeLocation.getHttpUtil().getWeather().getHum());
+                    weatherTmp.setText(gaodeLocation.getHeWeather().getWeather().getTmp());
+                    weatherCounty.setText(gaodeLocation.getHeWeather().getWeather().getCounty());
+                    weatherCondTxt.setText(gaodeLocation.getHeWeather().getWeather().getCondText());
+                    weatherCondHum.setText(gaodeLocation.getHeWeather().getWeather().getHum());
                     break;
                 case Constant.WEATHER_EMPTY:
                 case Constant.WEATHER_REQUEST_ERROR:
                     Toast.makeText(getApplicationContext(), Constant.WEATHER_REQUEST_ERROR_TXT, Toast.LENGTH_SHORT).show();
+                    break;
+                case Constant.BINGPIC_CALL_BACK:
+                    Glide.with(MainActivity.this).load(bingPicApi.getBingPicAdress()).into(bingPic);//加载必应图片
                     break;
                 default:
                     break;
@@ -206,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ZXingLibrary.initDisplayOpinion(this);
         bottomNavigationPosition = 0;
         locationAndWeatherUpdate();
+        bingPicUpdate();
     }
 
     //运行时权限申请授权处理
@@ -253,8 +259,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         swipeMenuListFragment = new SwipeMenuListFragment();
         expandableListFragment = new ExpandableListFragment();
-
-        Glide.with(this).load(Constant.BING_PIC).into(bingPic);//加载必应图片
 
         setSupportActionBar(toolBar);//将toolBar作为ActionBar
         //添加toolbar导航栏
@@ -312,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void run() {
                 Message message = new Message();
                 while (true) {
-                    int callBackFlag = gaodeLocation.getHttpUtil().getWeatherCallBackFlag();
+                    int callBackFlag = gaodeLocation.getHeWeather().getWeatherCallBackFlag();
                     switch (callBackFlag) {
                         case Constant.WEATHER_CALL_BACK:
                             message.what = Constant.WEATHER_CALL_BACK;
@@ -336,6 +340,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                     if (callBackFlag != 0) {
                         break;
+                    }
+                }
+            }
+        }).start();
+    }
+    private void bingPicUpdate(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                bingPicApi = new BingPic();
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                        if(!"".equals(bingPicApi.getBingPicAdress())){
+                            message.what = Constant.BINGPIC_CALL_BACK;
+                            handler.sendMessage(message);
+                            break;
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }

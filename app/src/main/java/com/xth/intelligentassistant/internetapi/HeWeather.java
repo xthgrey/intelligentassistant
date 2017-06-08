@@ -1,8 +1,10 @@
-package com.xth.intelligentassistant.util;
+package com.xth.intelligentassistant.internetapi;
 
 import android.text.TextUtils;
 
 import com.xth.intelligentassistant.main.Weather;
+import com.xth.intelligentassistant.util.Constant;
+import com.xth.intelligentassistant.util.HttpUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,43 +14,33 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Created by XTH on 2017/5/24.
+ * Created by XTH on 2017/6/8.
  */
 
-public class HttpUtiil {
+public class HeWeather {
     private Weather weather;
     private int WeatherCallBackFlag;//0:等待，1：成功，2：返回为空，3：请求错误
-
-    public int getWeatherCallBackFlag() {
-        return WeatherCallBackFlag;
-    }
-
 
     public Weather getWeather() {
         return weather;
     }
 
-    public HttpUtiil() {
+    public int getWeatherCallBackFlag() {
+        return WeatherCallBackFlag;
+    }
+
+    public HeWeather() {
         weather = new Weather();
         WeatherCallBackFlag = 0;
     }
-
-    private void sendOkHttpRequest(String address, okhttp3.Callback callback) {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url(address).build();
-        client.newCall(request).enqueue(callback);
-    }
-
     public void queryWeather(String city, String county) {
         String address = Constant.WEATHERADDRESS + city + Constant.WEATHERKEY;
         weather.setCity(city);
         weather.setCounty(county);
-        sendOkHttpRequest(address, new Callback() {
+        HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 WeatherCallBackFlag = Constant.WEATHER_REQUEST_ERROR;

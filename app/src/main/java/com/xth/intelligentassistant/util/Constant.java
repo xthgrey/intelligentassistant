@@ -93,11 +93,17 @@ public class Constant {
     public static final String ERROR_DEVICE_NAME = "警告：相同场景设备名不能相同";
     public static final String ERROR_EMPTY_NAME = "警告：名字不能是空白的";
 
-    public static final String BING_PIC = "https://cn.bing.com/az/hprichbg/rb/KaprunDam_ZH-CN9638804777_1920x1080.jpg";
+    public static final String BING_API = "http://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1";
+    public static final String BING_PIC = "http://cn.bing.com";
+    public static final String BING_PIC_IMAGES = "images";
+    public static final String BING_PIC_URL = "url";
 
     public static final int WEATHER_CALL_BACK = 1;
     public static final int WEATHER_EMPTY = 2;
     public static final int WEATHER_REQUEST_ERROR = 3;
+    public static final int BINGPIC_CALL_BACK = 4;
+
+
     public static final int MODIFY = 0;
     public static final int DELETE = 1;
     public static final int REQUEST_CODE = 1;
@@ -112,7 +118,4 @@ public class Constant {
     public static final int TURING_REQUEST_EXHAUST = 40004;
     public static final int TURING_DATA_FORMAT_ERROR = 40007;
     public static final String TURING_CODE = "code";
-
-    public static final String YOUDAO_APPKEY = "bs9RCw3rS5rQFJf96lk2GqalwYOQNki6";
-    public static final String YOUDAO_APPNAME = "com.xth.intelligentassistant";
 }

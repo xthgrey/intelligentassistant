@@ -13,7 +13,7 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.xth.intelligentassistant.util.Constant;
-import com.xth.intelligentassistant.util.HttpUtiil;
+import com.xth.intelligentassistant.util.HttpUtil;
 
 /**
  * Created by XTH on 2017/5/19.
@@ -32,16 +32,18 @@ public class GaodeLocation implements AMapLocationListener {
 
 
 
-    private HttpUtiil httpUtil;
-    public HttpUtiil getHttpUtil() {
-        return httpUtil;
+    private HeWeather heWeather;
+
+    public HeWeather getHeWeather() {
+        return heWeather;
     }
+
     public String getDetailAdress() {
         return detailAdress;
     }
 
     public GaodeLocation(Context context) {
-        httpUtil = new HttpUtiil();
+        heWeather = new HeWeather();
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 4);
         }
@@ -78,7 +80,7 @@ public class GaodeLocation implements AMapLocationListener {
                 detailAdress = aMapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
                 locationCity = aMapLocation.getCity();//城市信息
                 locationCounty = aMapLocation.getDistrict();//城区信息
-                httpUtil.queryWeather(locationCity,locationCounty);
+                heWeather.queryWeather(locationCity,locationCounty);
                 Toast.makeText(context, Constant.MAP_LOCATION_TIP + aMapLocation.getAddress(),Toast.LENGTH_LONG).show();
             }else {
                 //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
