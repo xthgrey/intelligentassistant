@@ -2,9 +2,11 @@ package com.xth.intelligentassistant.util;
 
 public class Constant {
 
-    public static final String API_KEY = "VsCpOUtv6vquaw5ZMKhLLZAs";
-    public static final String SECRET_KEY = "15004d92543351f67bf6873f9ec907ea";
-    public static final String APP_ID = "9628655";
+    public static final String YUYIN_API_KEY = "VsCpOUtv6vquaw5ZMKhLLZAs";
+    public static final String YUYIN_SECRET_KEY = "15004d92543351f67bf6873f9ec907ea";
+    public static final String YUYIN_APP_ID = "9628655";
+    public static final String TURING_SECRET_KEY = "850845256cd927cc";
+    public static final String TURING_API_KEY = "b2d3853543864ce19ad5330335141ec2";
 
     public static final String GENERALGIRL = "欢迎使用智能助手普通女声";
     public static final String GENERALBOY = "欢迎使用智能助手普通男声";
@@ -100,4 +102,17 @@ public class Constant {
     public static final int DELETE = 1;
     public static final int REQUEST_CODE = 1;
     public static final int REQUEST_IMAGE = 2;
+
+    public static final int TURING_CHARACTER = 100000;
+    public static final int TURING_LINK = 200000;
+    public static final int TURING_NEWS = 302000;
+    public static final int TURING_COOKBOOK = 308000;
+    public static final int TURING_KEY_ERROR = 40001;
+    public static final int TURING_INFO_EMPTY = 40002;
+    public static final int TURING_REQUEST_EXHAUST = 40004;
+    public static final int TURING_DATA_FORMAT_ERROR = 40007;
+    public static final String TURING_CODE = "code";
+
+    public static final String YOUDAO_APPKEY = "bs9RCw3rS5rQFJf96lk2GqalwYOQNki6";
+    public static final String YOUDAO_APPNAME = "com.xth.intelligentassistant";
 }

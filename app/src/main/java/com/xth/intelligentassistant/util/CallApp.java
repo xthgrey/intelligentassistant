@@ -14,8 +14,11 @@ import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
+import com.turing.androidsdk.HttpRequestListener;
+import com.turing.androidsdk.TuringManager;
 import com.uuzuche.lib_zxing.activity.CaptureActivity;
 import com.xth.intelligentassistant.MainActivity;
+import com.xth.intelligentassistant.gson.TuringAnalyze;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +40,6 @@ public class CallApp {
 
     public CallApp(Context context) {
         this.context = context;
-        contacts = readContacts();
         appInfos = queryAllAppInfo();
     }
 
@@ -64,6 +66,7 @@ public class CallApp {
      */
     public String callPhone(String s) {
         String number = "";
+        contacts = readContacts();
         if (s.indexOf(Constant.CALL) != -1) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.CALL_PHONE}, 2);
@@ -106,7 +109,6 @@ public class CallApp {
                 while (cursor.moveToNext()) {
                     String displayName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                     String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                    LogUtil.d(displayName + ":"+number);
                     contacts.put(displayName, number);
                 }
             }
@@ -152,14 +154,51 @@ public class CallApp {
      * @return
      */
     public String turnString(String s) {
-
+        String content;
         //检测内容为打开app
-        s = checkOpenApp(s);
+        content = checkOpenApp(s);
+        if(!content.equals(s)){
+            return content;
+        }
         //检测内容为搜索
-        s = callBrowser(s);
+        content = callBrowser(s);
+        if(!content.equals(s)){
+            return content;
+        }
         //检测内容为呼叫
-        s = callPhone(s);
-        return s;
+        content = callPhone(s);
+        if(!content.equals(s)){
+            return content;
+        }
+        return content;
+    }
+    public String turingTurnString(int code,String content){
+        //图灵返回代码
+        switch (code){
+            case Constant.TURING_CHARACTER:
+            case Constant.TURING_KEY_ERROR:
+            case Constant.TURING_INFO_EMPTY:
+            case Constant.TURING_REQUEST_EXHAUST:
+            case Constant.TURING_DATA_FORMAT_ERROR:
+                content = TuringAnalyze.character.text;
+                break;
+            case Constant.TURING_COOKBOOK:
+                content = TuringAnalyze.cookBook.text;
+                break;
+            case Constant.TURING_LINK:
+                content = TuringAnalyze.link.text;
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(TuringAnalyze.link.url));
+                if (intent.resolveActivity(context.getPackageManager()) != null) {
+                    context.startActivity(intent);
+                }
+                break;
+            case Constant.TURING_NEWS:
+                content = TuringAnalyze.news.text;
+                break;
+            default:
+                break;
+        }
+        return content;
     }
 
     // 根据查询条件，查询特定的ApplicationInfo

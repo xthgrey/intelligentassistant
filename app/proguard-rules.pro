@@ -152,3 +152,6 @@
 -keep class com.autonavi.aps.amapapi.model.**{*;}
 #百度语音
 -keep class com.baidu.**{*;}
+#图灵
+-keep class com.turing.androidsdk.**{*;}
+

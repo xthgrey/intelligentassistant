@@ -33,9 +33,11 @@ import com.baidu.tts.client.SpeechError;
 import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
+import com.turing.androidsdk.HttpRequestListener;
+import com.turing.androidsdk.TuringManager;
 import com.xth.intelligentassistant.dialogue.Msg;
 import com.xth.intelligentassistant.dialogue.MsgAdapter;
-import com.xth.intelligentassistant.util.AppInfo;
+import com.xth.intelligentassistant.gson.TuringAnalyze;
 import com.xth.intelligentassistant.util.CallApp;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
@@ -46,14 +48,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by XTH on 2017/5/12.
  */
 
-public class DialogueActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener, RecognitionListener, SpeechSynthesizerListener {
+public class DialogueActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener, RecognitionListener, SpeechSynthesizerListener, HttpRequestListener {
 
     private Toolbar toolBar;//标题栏
     private Button textVoiceChooseButton;//文字语音选择按钮
@@ -73,6 +74,8 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     private SpeechRecognizer speechRecognizer;
     // 语音合成客户端
     private SpeechSynthesizer mSpeechSynthesizer;
+    //图灵接口
+    private TuringManager turingManager;
 
     private String mSampleDirPath;
     private CallApp callApp;
@@ -176,6 +179,10 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         // 注册监听器
         speechRecognizer.setRecognitionListener(this);
 
+        turingManager = new TuringManager(this, Constant.TURING_API_KEY, Constant.TURING_SECRET_KEY);
+        //设置图灵接口联网监听
+        turingManager.setHttpRequestListener(this);
+
         //动态加载view到dialog
         View view = LayoutInflater.from(this).inflate(R.layout.dialogue_layout_dialog, null);
         dialog.setContentView(view);
@@ -216,12 +223,12 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
                 String content = textEdit.getText().toString();
                 if (!"".equals(content)) {
                     recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_SENT));
+                    if(content.equals(callApp.turnString(content))){//经过转换之后内容相同说明本地方法无效
+                        turingManager.requestTuring(content);//图灵联网
+                    }else{//本地方法有效
+                        dialogResultDeal(callApp.turnString(content));//说出内容
+                    }
                     textEdit.setText("");
-                    //内容转换
-                    content = turnToAntherString(content);
-                    //返回对话结果
-                    recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_RECEIVED));
-                    mSpeechSynthesizer.speak( content);
                 }
                 break;
             default:
@@ -264,6 +271,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
      * 数据处理
      */
     private void dealData() {
+        callApp = new CallApp(this);
         textVoiceChooseButtonDeal();
     }
 
@@ -295,6 +303,7 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 销毁");
         speechRecognizer.destroy();
         this.mSpeechSynthesizer.release();
+        TuringAnalyze.code = 0;
         super.onDestroy();
     }
 
@@ -385,17 +394,14 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
     public void onResults(Bundle results) {
         LogUtil.d(getComponentName() + "---" + new Throwable().getStackTrace()[0].getMethodName() + " : 最终结果处理");
         ArrayList<String> nbest = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        String s = nbest.get(0).replaceAll("\\[|\\]|\\,", "");
+        String content = nbest.get(0).replaceAll("\\[|\\]|\\,", "");
 //        String s = Arrays.toString(nbest.toArray(new String[nbest.size()])).replaceAll("\\[|\\]", "");
-        //用对话方式显示语音结果
-        recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_SENT));
-        //内容转换
-        s = turnToAntherString(s);
-        // 最终结果处理
-        //返回语音识别的结果，语音合成说出
-        recyclerViewPositionToEnd(new Msg(s, Msg.TYPE_RECEIVED));
-        //需要合成的文本text的长度不能超过1024个GBK字节。
-        mSpeechSynthesizer.speak(s);
+        recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_SENT));
+        if(content.equals(callApp.turnString(content))){//经过转换之后内容相同说明本地方法无效
+            turingManager.requestTuring(content);//图灵联网
+        }else{//本地方法有效
+            dialogResultDeal(callApp.turnString(content));//说出内容
+        }
     }
 
     @Override
@@ -491,9 +497,9 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         // 设置语音合成状态监听器
         mSpeechSynthesizer.setSpeechSynthesizerListener(this);
         // 设置在线语音合成授权，需要填入从百度语音官网申请的api_key和secret_key
-        mSpeechSynthesizer.setApiKey(Constant.API_KEY, Constant.SECRET_KEY);
+        mSpeechSynthesizer.setApiKey(Constant.YUYIN_API_KEY, Constant.YUYIN_SECRET_KEY);
         // 设置离线语音合成授权，需要填入从百度语音官网申请的app_id
-        mSpeechSynthesizer.setAppId(Constant.APP_ID);
+        mSpeechSynthesizer.setAppId(Constant.YUYIN_APP_ID);
         // 设置语音合成文本模型文件
         mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_TTS_TEXT_MODEL_FILE, mSampleDirPath + "/"
                 + Constant.TEXT_MODEL_NAME);
@@ -596,10 +602,22 @@ public class DialogueActivity extends AppCompatActivity implements View.OnClickL
         recyclerView.scrollToPosition(msgList.size() - 1);//定位到最后一行
     }
 
-    private String turnToAntherString(String content) {
-        if (callApp == null) {//第一次运行加载数据
-            callApp = new CallApp(this);
-        }
-        return callApp.turnString(content);
+    @Override
+    public void onSuccess(String s) {
+        int code = TuringAnalyze.TuringResponse(s);
+        LogUtil.i(s);
+        s = callApp.turingTurnString(code,s);
+        dialogResultDeal(s);
+    }
+
+    @Override
+    public void onFail(int i, String s) {
+        dialogResultDeal(s);
+    }
+
+    private void dialogResultDeal(String content) {
+        //返回对话结果
+        recyclerViewPositionToEnd(new Msg(content, Msg.TYPE_RECEIVED));
+        mSpeechSynthesizer.speak(content);
     }
 }

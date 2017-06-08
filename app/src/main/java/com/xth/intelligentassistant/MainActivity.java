@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initUI() {
-        bingPic = (ImageView)findViewById(R.id.main_bing_pic);
+        bingPic = (ImageView) findViewById(R.id.main_bing_pic);
         toolBar = (Toolbar) findViewById(R.id.main_layout_toolbar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.main_navigate_view);
@@ -304,7 +304,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return true;
     }
-    private void locationAndWeatherUpdate(){
+
+    private void locationAndWeatherUpdate() {
         gaodeLocation = new GaodeLocation(this);
         new Thread(new Runnable() {
             @Override
