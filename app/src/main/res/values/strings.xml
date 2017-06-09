@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">"智能助手"</string>
 
-    <string name="main_toolbar_title">"KKKK"</string>
+    <string name="main_toolbar_title">"图灵"</string>
+
+    <string name="main_headerlayout_user_name_text">"用户名称："</string>
+    <string name="main_headerlayout_account_number_text">"账户号码："</string>
 
     <string name="main_menu_browser_text">"打开浏览器"</string>
     <string name="main_menu_qrcode_text">"扫码"</string>
@@ -24,6 +27,7 @@
     <string name="cancel">"取消"</string>
     <string name="update">"修改"</string>
     <string name="delete">"删除"</string>
+    <string name="qiut_app">"退出"</string>
 
     <string name="XX">"--"</string>
 

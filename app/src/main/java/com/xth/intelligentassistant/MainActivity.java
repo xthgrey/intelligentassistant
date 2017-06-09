@@ -1,5 +1,6 @@
 package com.xth.intelligentassistant;
 
+import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -212,6 +213,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bottomNavigationPosition = 0;
         locationAndWeatherUpdate();
         bingPicUpdate();
+
+        ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+        int memoryClass = am.getMemoryClass();
+        LogUtil.d(memoryClass+"memoryClass");
     }
 
     //运行时权限申请授权处理

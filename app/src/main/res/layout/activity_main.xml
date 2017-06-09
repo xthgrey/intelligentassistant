@@ -47,8 +47,7 @@
             <FrameLayout
                 android:id="@+id/main_list_view_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-            </FrameLayout>
+                android:layout_height="match_parent"></FrameLayout>
 
         </LinearLayout>
 
@@ -68,8 +67,6 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/activity_main_navigate_headerlayout"
         app:menu="@menu/main_navigate_menu">
-
     </android.support.design.widget.NavigationView>
-
 
 </android.support.v4.widget.DrawerLayout>

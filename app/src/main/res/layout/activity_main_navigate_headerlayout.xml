@@ -13,18 +13,38 @@
         android:layout_centerInParent="true"/>
 
     <TextView
+        android:id="@+id/main_headerlayout_user_name_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="@string/main_headerlayout_user_name_text"
+        android:textColor="@color/main_headerlayout_user_name_color"
+        android:textSize="14sp"/>
+    <TextView
         android:id="@+id/main_headerlayout_user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/main_headerlayout_user_name_text"
+        android:text="xth"
         android:textColor="@color/main_headerlayout_user_name_color"
         android:textSize="14sp"/>
 
     <TextView
+        android:id="@+id/main_headerlayout_account_number_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/main_headerlayout_user_name_text"
+        android:textColor="@color/main_headerlayout_account_number_color"
+        android:text="@string/main_headerlayout_account_number_text"
+        android:textSize="14sp"/>
+    <TextView
         android:id="@+id/main_headerlayout_account_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/main_headerlayout_user_name"
+        android:layout_above="@id/main_headerlayout_user_name_text"
+        android:layout_toRightOf="@+id/main_headerlayout_account_number_text"
+        android:text="12345678"
         android:textColor="@color/main_headerlayout_account_number_color"
         android:textSize="14sp"/>
 
