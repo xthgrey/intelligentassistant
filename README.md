@@ -1,6 +1,8 @@
 # intelligentassistant
+
 信息保存：1.数据库：litepal
          2.sharePreference
+
 主界面 ：1.布局采用DrawerLayout,NavigationView
         2.连接高德定位功能
         3.连接必应每日图片接口
@@ -11,6 +13,7 @@
         8.图片圆形化：circleimageview
         9.二维码扫描：zxing-library
         10.图片加载：glide
+
 智能助手界面： 
         1.采用文字对话和语音对话界面，recyclerview类似微信对话界面
         2.采用百度语音识别和合成接口
