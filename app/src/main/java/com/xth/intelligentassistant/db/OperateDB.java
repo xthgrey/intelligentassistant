@@ -31,6 +31,10 @@ public class OperateDB {
         device.setSenceName(newName);
         device.updateAll("sencename = ?",oldName);
     }
+    public static  void updateSenceId(Sence sence,String senceName,String senceId){
+        sence.setSenceId(senceId);
+        sence.updateAll("sencename = ?",senceName);
+    }
 
     public static void updateName(Device device, String senceName,String deviceOldName,String deviceNewName) {
         device.setDeviceName(deviceNewName);

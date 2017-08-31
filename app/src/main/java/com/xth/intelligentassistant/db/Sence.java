@@ -8,6 +8,15 @@ import org.litepal.crud.DataSupport;
 
 public class Sence extends DataSupport{
     private String senceName;
+    private String senceId;
+
+    public String getSenceId() {
+        return senceId;
+    }
+
+    public void setSenceId(String senceId) {
+        this.senceId = senceId;
+    }
 
     public String getSenceName() {
         return senceName;

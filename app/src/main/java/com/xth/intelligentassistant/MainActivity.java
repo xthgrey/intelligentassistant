@@ -46,6 +46,7 @@ import com.xth.intelligentassistant.db.OperateDB;
 import com.xth.intelligentassistant.db.Sence;
 import com.xth.intelligentassistant.internetapi.BingPic;
 import com.xth.intelligentassistant.internetapi.GaodeLocation;
+import com.xth.intelligentassistant.internetapi.OneNet;
 import com.xth.intelligentassistant.main.ExpandableListFragment;
 import com.xth.intelligentassistant.main.SwipeMenuListFragment;
 import com.xth.intelligentassistant.util.Constant;
@@ -60,6 +61,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, BottomNavigationBar.OnTabSelectedListener {
 
     private int bottomNavigationPosition;
+    private OneNet oneNet;
 
     private ImageView bingPic;
     private Toolbar toolBar;//标题栏
@@ -156,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 Toast.makeText(MainActivity.this, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
                             } else {
                                 swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
+                                oneNet.RegisterDevice( alertDialogEdit.getText().toString(), alertDialogEdit.getText().toString());//注册Sence到OneNet
                             }
                             break;
                         case Constant.DEVICE_NAME:
@@ -194,7 +197,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         applyForPermission();
         initUI();
         initData();
@@ -214,9 +216,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         locationAndWeatherUpdate();
         bingPicUpdate();
 
-        ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         int memoryClass = am.getMemoryClass();
-        LogUtil.d(memoryClass+"memoryClass");
+        LogUtil.d(memoryClass + "memoryClass");
+
+        oneNet = new OneNet();
     }
 
     //运行时权限申请授权处理
@@ -350,7 +354,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }).start();
     }
-    private void bingPicUpdate(){
+
+    private void bingPicUpdate() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -359,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        if(!"".equals(bingPicApi.getBingPicAdress())){
+                        if (!"".equals(bingPicApi.getBingPicAdress())) {
                             message.what = Constant.BINGPIC_CALL_BACK;
                             handler.sendMessage(message);
                             break;

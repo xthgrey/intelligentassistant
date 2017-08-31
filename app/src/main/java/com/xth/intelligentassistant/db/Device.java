@@ -9,6 +9,15 @@ import org.litepal.crud.DataSupport;
 public class Device extends DataSupport {
     private String deviceName;
     private String senceName;
+    private String deviceId;
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
     public String getSenceName() {
         return senceName;
