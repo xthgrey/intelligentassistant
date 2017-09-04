@@ -23,6 +23,7 @@ import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.db.OperateDB;
 import com.xth.intelligentassistant.db.Sence;
+import com.xth.intelligentassistant.internetapi.OneNet;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
@@ -143,9 +144,13 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 editName(swipeMenuItemMap, position);
                 break;
             case Constant.DELETE:
-                OperateDB.deleteName((String) swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY));
+                String s = (String) swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY);
+                Sence sence = OperateDB.isHaveInDB(s);
+                new OneNet().deleteDevice(sence.getSenceId());//OneNet删除场景
+                OperateDB.deleteName(s);
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
+
                 break;
         }
         return false;
@@ -167,10 +172,12 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 if(s.equals(oldName)){
 
                 } else if (!"".equals(s)) {
-                    if (OperateDB.isHaveInDB(s)) {
+                    if (OperateDB.isHaveInDB(s)!=null) {
                         Toast.makeText(context, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
                     } else {
                         OperateDB.updateName(new Sence(), s, oldName);
+                        Sence sence = OperateDB.isHaveInDB(s);
+                        new OneNet().updateDevice(sence.getSenceId(),s,true);
                         swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
                         swipeMenuItemList.set(position, swipeMenuItemMap);
                         adapter.notifyDataSetChanged();

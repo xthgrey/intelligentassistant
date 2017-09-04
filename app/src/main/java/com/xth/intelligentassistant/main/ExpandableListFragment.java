@@ -128,7 +128,7 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
                 if(s.equals(oldName)){
 
                 }else if (!"".equals(s)) {
-                    if (OperateDB.isHaveInDB((String) groupList.get(groupPosition).get(Constant.SWIPE_SENCE_KEY), s)) {
+                    if (OperateDB.isHaveInDB((String) groupList.get(groupPosition).get(Constant.SWIPE_SENCE_KEY), s)!=null) {
                         Toast.makeText(context, Constant.ERROR_DEVICE_NAME, Toast.LENGTH_SHORT).show();
                     } else {
                         OperateDB.updateName(new Device(), (String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY), oldName, s);//修改弹窗

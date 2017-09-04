@@ -154,15 +154,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (!"".equals(s)) {
                     switch (title) {
                         case Constant.SENCE_NAME:
-                            if (OperateDB.isHaveInDB(s)) {
+                            if (OperateDB.isHaveInDB(s) != null) {
                                 Toast.makeText(MainActivity.this, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
                             } else {
                                 swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
-                                oneNet.RegisterDevice( alertDialogEdit.getText().toString(), alertDialogEdit.getText().toString());//注册Sence到OneNet
+                                //oneNet.RegisterDevice( alertDialogEdit.getText().toString(), alertDialogEdit.getText().toString());//注册Sence到OneNet
+                                oneNet.incDevice(alertDialogEdit.getText().toString(), true);
                             }
                             break;
                         case Constant.DEVICE_NAME:
-                            if (OperateDB.isHaveInDB((String) expandableListFragment.getGroupList().get(expandableListFragment.getGroupPosition()).get(Constant.SWIPE_SENCE_KEY), s)) {
+                            if (OperateDB.isHaveInDB((String) expandableListFragment.getGroupList().get(expandableListFragment.getGroupPosition()).get(Constant.SWIPE_SENCE_KEY), s) != null) {
                                 Toast.makeText(MainActivity.this, Constant.ERROR_DEVICE_NAME, Toast.LENGTH_SHORT).show();
                             } else {
                                 expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, alertDialogEdit.getText().toString());

@@ -51,21 +51,21 @@ public class OperateDB {
     }
 
     @NonNull
-    public static Boolean isHaveInDB(String senceName){
+    public static Sence isHaveInDB(String senceName){
         for (Sence sence:DataSupport.findAll(Sence.class)){
             if(sence.getSenceName().equals(senceName)){
-                return true;
+                return sence;
             }
         }
-        return false;
+        return null;
     }
 
-    public static Boolean isHaveInDB(String senceName, String deviceName){
+    public static Device isHaveInDB(String senceName, String deviceName){
         for (Device device:DataSupport.findAll(Device.class)){
             if((device.getSenceName().equals(senceName)) && (device.getDeviceName().equals(deviceName))){
-                return true;
+                return device;
             }
         }
-        return false;
+        return null;
     }
 }
