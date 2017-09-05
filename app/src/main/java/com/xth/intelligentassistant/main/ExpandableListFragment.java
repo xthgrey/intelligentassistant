@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.xth.intelligentassistant.R;
 import com.xth.intelligentassistant.db.Device;
 import com.xth.intelligentassistant.db.OperateDB;
+import com.xth.intelligentassistant.internetapi.OneNet;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
 
@@ -102,7 +103,7 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
                         editName(expandMenuItemMap, groupPos, childPos);
                         break;
                     case Constant.DELETE://删除
-                        OperateDB.deleteName((String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY), (String) groupChildLists.get(groupPos).get(childPos).get(Constant.SWIPE_DIVICE_KEY));
+                        new OneNet().deleteDevice((String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY), (String) groupChildLists.get(groupPos).get(childPos).get(Constant.SWIPE_DIVICE_KEY));
                         groupChildLists.get(groupPos).remove(childPos);
                         adapter.notifyDataSetChanged();
                         break;
@@ -123,15 +124,14 @@ public class ExpandableListFragment extends Fragment implements ExpandableListVi
         builder.setPositiveButton(Constant.CONFIRM, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String s = alertDialogEdit.getText().toString();
-                s = s.replaceAll("\\s", "");
+                String s = alertDialogEdit.getText().toString().replaceAll("\\s", "");
                 if(s.equals(oldName)){
 
                 }else if (!"".equals(s)) {
                     if (OperateDB.isHaveInDB((String) groupList.get(groupPosition).get(Constant.SWIPE_SENCE_KEY), s)!=null) {
                         Toast.makeText(context, Constant.ERROR_DEVICE_NAME, Toast.LENGTH_SHORT).show();
                     } else {
-                        OperateDB.updateName(new Device(), (String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY), oldName, s);//修改弹窗
+                        new OneNet().updateDevice((String) groupList.get(groupPos).get(Constant.SWIPE_SENCE_KEY),oldName,s);
                         expandMenuItemMap.put(Constant.SWIPE_DIVICE_KEY, s);
                         List<Map<String, Object>> expandMenuItemList = groupChildLists.get(groupPos);
                         expandMenuItemList.set(childPos, expandMenuItemMap);//子项列表中的子列表内容更新

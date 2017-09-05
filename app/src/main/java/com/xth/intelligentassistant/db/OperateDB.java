@@ -23,26 +23,28 @@ public class OperateDB {
         device.save();
     }
 
-    public static void updateName(Sence sence, String newName, String oldName) {
+    public static void updateName(Sence sence, String oldName, String newName) {
         sence.setSenceName(newName);
-        sence.updateAll("sencename = ?",oldName);
+        sence.updateAll("sencename = ?", oldName);
 
         Device device = new Device();
         device.setSenceName(newName);
-        device.updateAll("sencename = ?",oldName);
-    }
-    public static  void updateSenceId(Sence sence,String senceName,String senceId){
-        sence.setSenceId(senceId);
-        sence.updateAll("sencename = ?",senceName);
+        device.updateAll("sencename = ?", oldName);
     }
 
-    public static void updateName(Device device, String senceName,String deviceOldName,String deviceNewName) {
+    public static void updateName(Device device, String senceName, String deviceOldName, String deviceNewName) {
         device.setDeviceName(deviceNewName);
-        device.updateAll("sencename = ? and devicename = ?",senceName,deviceOldName);
+        device.updateAll("sencename = ? and devicename = ?", senceName, deviceOldName);
     }
-    public static void updateDeviceId(Device device, String senceName,String deviceName,String deviceId) {
+
+    public static void updateSenceId(Sence sence, String senceName, String senceId) {
+        sence.setSenceId(senceId);
+        sence.updateAll("sencename = ?", senceName);
+    }
+
+    public static void updateDeviceId(Device device, String senceName, String deviceName, String deviceId) {
         device.setDeviceId(deviceId);
-        device.updateAll("senceName = ? and devicename = ?",senceName,deviceName);
+        device.updateAll("senceName = ? and devicename = ?", senceName, deviceName);
     }
 
     public static void deleteName(String senceName) {
@@ -50,23 +52,23 @@ public class OperateDB {
         DataSupport.deleteAll(Device.class, "sencename = ?", senceName);
     }
 
-    public static void deleteName(String senceName,String deviceName) {
-        DataSupport.deleteAll(Device.class,"sencename = ? and devicename = ?",senceName, deviceName);
+    public static void deleteName(String senceName, String deviceName) {
+        DataSupport.deleteAll(Device.class, "sencename = ? and devicename = ?", senceName, deviceName);
     }
 
     @NonNull
-    public static Sence isHaveInDB(String senceName){
-        for (Sence sence:DataSupport.findAll(Sence.class)){
-            if(sence.getSenceName().equals(senceName)){
+    public static Sence isHaveInDB(String senceName) {
+        for (Sence sence : DataSupport.findAll(Sence.class)) {
+            if (sence.getSenceName().equals(senceName)) {
                 return sence;
             }
         }
         return null;
     }
 
-    public static Device isHaveInDB(String senceName, String deviceName){
-        for (Device device:DataSupport.findAll(Device.class)){
-            if((device.getSenceName().equals(senceName)) && (device.getDeviceName().equals(deviceName))){
+    public static Device isHaveInDB(String senceName, String deviceName) {
+        for (Device device : DataSupport.findAll(Device.class)) {
+            if ((device.getSenceName().equals(senceName)) && (device.getDeviceName().equals(deviceName))) {
                 return device;
             }
         }

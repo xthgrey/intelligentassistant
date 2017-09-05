@@ -145,9 +145,7 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                 break;
             case Constant.DELETE:
                 String s = (String) swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY);
-                Sence sence = OperateDB.isHaveInDB(s);
-                new OneNet().deleteSence(sence.getSenceId());//OneNet删除场景
-                OperateDB.deleteName(s);
+                new OneNet().deleteSence(s);//OneNet删除场景
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
 
@@ -167,17 +165,14 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
         builder.setPositiveButton(Constant.CONFIRM, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String s = alertDialogEdit.getText().toString();
-                s = s.replaceAll("\\s", "");
-                if(s.equals(oldName)){
+                String s = alertDialogEdit.getText().toString().replaceAll("\\s", "");
+                if (s.equals(oldName)) {
 
                 } else if (!"".equals(s)) {
-                    if (OperateDB.isHaveInDB(s)!=null) {
+                    if (OperateDB.isHaveInDB(s) != null) {
                         Toast.makeText(context, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
                     } else {
-                        OperateDB.updateName(new Sence(), s, oldName);
-                        Sence sence = OperateDB.isHaveInDB(s);
-                        new OneNet().updateSence(sence.getSenceId(),s,true);
+                        new OneNet().updateSence(oldName, s, true);
                         swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
                         swipeMenuItemList.set(position, swipeMenuItemMap);
                         adapter.notifyDataSetChanged();
