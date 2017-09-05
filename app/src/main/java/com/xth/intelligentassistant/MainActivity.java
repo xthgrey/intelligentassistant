@@ -149,24 +149,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setPositiveButton(Constant.CONFIRM, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String s = alertDialogEdit.getText().toString();
-                s = s.replaceAll("\\s", "");
+                String s = alertDialogEdit.getText().toString().replaceAll("\\s", "");
                 if (!"".equals(s)) {
                     switch (title) {
                         case Constant.SENCE_NAME:
                             if (OperateDB.isHaveInDB(s) != null) {
                                 Toast.makeText(MainActivity.this, Constant.ERROR_SENCE_NAME, Toast.LENGTH_SHORT).show();
                             } else {
-                                swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, alertDialogEdit.getText().toString());
+                                swipeMenuListFragment.swipeViewAddItem(Constant.SWIPE_SENCE_KEY, s);
                                 //oneNet.RegisterDevice( alertDialogEdit.getText().toString(), alertDialogEdit.getText().toString());//注册Sence到OneNet
-                                oneNet.incDevice(alertDialogEdit.getText().toString(), true);
+                                oneNet.incSence(s, true);//oneNet添加场景
                             }
                             break;
                         case Constant.DEVICE_NAME:
                             if (OperateDB.isHaveInDB((String) expandableListFragment.getGroupList().get(expandableListFragment.getGroupPosition()).get(Constant.SWIPE_SENCE_KEY), s) != null) {
                                 Toast.makeText(MainActivity.this, Constant.ERROR_DEVICE_NAME, Toast.LENGTH_SHORT).show();
                             } else {
-                                expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, alertDialogEdit.getText().toString());
+                                expandableListFragment.expandListViewAddItem(Constant.SWIPE_DIVICE_KEY, s);
+                                Sence sence = OperateDB.isHaveInDB((String) expandableListFragment.getGroupList().get(expandableListFragment.getGroupPosition()).get(Constant.SWIPE_SENCE_KEY));
+                                oneNet.incDevice(sence.getSenceName(),s);//oneNet添加设备
                             }
                             break;
                         default:

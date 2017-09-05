@@ -146,7 +146,7 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
             case Constant.DELETE:
                 String s = (String) swipeMenuItemList.get(position).get(Constant.SWIPE_SENCE_KEY);
                 Sence sence = OperateDB.isHaveInDB(s);
-                new OneNet().deleteDevice(sence.getSenceId());//OneNet删除场景
+                new OneNet().deleteSence(sence.getSenceId());//OneNet删除场景
                 OperateDB.deleteName(s);
                 swipeMenuItemList.remove(position);
                 adapter.notifyDataSetChanged();
@@ -177,7 +177,7 @@ public class SwipeMenuListFragment extends Fragment implements SwipeMenuListView
                     } else {
                         OperateDB.updateName(new Sence(), s, oldName);
                         Sence sence = OperateDB.isHaveInDB(s);
-                        new OneNet().updateDevice(sence.getSenceId(),s,true);
+                        new OneNet().updateSence(sence.getSenceId(),s,true);
                         swipeMenuItemMap.put(Constant.SWIPE_SENCE_KEY, s);
                         swipeMenuItemList.set(position, swipeMenuItemMap);
                         adapter.notifyDataSetChanged();

@@ -4,6 +4,9 @@ import org.litepal.crud.DataSupport;
 
 /**
  * Created by XTH on 2017/6/1.
+ * 数据库      onenet
+ * senceName    title
+ * senceId      device_id
  */
 
 public class Sence extends DataSupport{

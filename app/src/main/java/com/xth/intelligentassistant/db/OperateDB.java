@@ -40,6 +40,10 @@ public class OperateDB {
         device.setDeviceName(deviceNewName);
         device.updateAll("sencename = ? and devicename = ?",senceName,deviceOldName);
     }
+    public static void updateDeviceId(Device device, String senceName,String deviceName,String deviceId) {
+        device.setDeviceId(deviceId);
+        device.updateAll("senceName = ? and devicename = ?",senceName,deviceName);
+    }
 
     public static void deleteName(String senceName) {
         DataSupport.deleteAll(Sence.class, "sencename = ?", senceName);

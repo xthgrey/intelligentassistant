@@ -4,6 +4,10 @@ import org.litepal.crud.DataSupport;
 
 /**
  * Created by XTH on 2017/6/1.
+ * 数据库          oneNet
+ * deviceName       unit
+ * senceName        device->title
+ * deviceId         id
  */
 
 public class Device extends DataSupport {

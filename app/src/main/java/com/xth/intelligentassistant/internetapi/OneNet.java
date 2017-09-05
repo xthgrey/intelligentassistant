@@ -1,10 +1,12 @@
 package com.xth.intelligentassistant.internetapi;
 
 import com.google.gson.Gson;
+import com.xth.intelligentassistant.db.Device;
 import com.xth.intelligentassistant.db.OperateDB;
 import com.xth.intelligentassistant.db.Sence;
 import com.xth.intelligentassistant.gson.OneNetJson.OneNetErr;
 import com.xth.intelligentassistant.gson.OneNetJson.OneNetGetDe;
+import com.xth.intelligentassistant.gson.OneNetJson.OneNetIncDataStreams;
 import com.xth.intelligentassistant.gson.OneNetJson.OneNetIncDevice;
 import com.xth.intelligentassistant.gson.OneNetJson.OneNetRegisterDe;
 import com.xth.intelligentassistant.util.LogUtil;
@@ -25,14 +27,16 @@ import okhttp3.Response;
 /**
  * Created by XTH on 2017/8/29.
  * 与OneNET平台接口对接，从而控制和读取ministm32上的数据
+ * OneNet 中device对应数据库的sence，datastreams对应数据库中的device
  */
 
 public class OneNet {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final String host = "http://api.heclouds.com";
-    private static final String registerDe = "/register_de?";
+    private static final String registerSence = "/register_de?";
     private static final String registerCode = "register_code=4s6bBQQb1imhUDQv";
-    private static final String devices = "/devices";
+    private static final String sences = "/devices";
+    private static final String devices = "/datastreams";
     private static final String API_KEY_NAME = "api-key";
     private static final String API_KEY_VALUE = "VJjx0ugy6uTIVVNC2d16Un=elPs=";
 
@@ -45,14 +49,14 @@ public class OneNet {
     }
 
 
-    private void sendRegisterDe(String sn, String title, okhttp3.Callback callback) {
+    private void registerSe(String sn, String title, okhttp3.Callback callback) {
         JSONObject json = new JSONObject();
         try {
             json.put("sn", sn);
             json.put("title", title);
             LogUtil.i(json.toString());
             Request request = new Request.Builder()
-                    .url(host + registerDe + registerCode)
+                    .url(host + registerSence + registerCode)
                     .post(RequestBody.create(JSON, json.toString()))
                     .build();
             client.newCall(request).enqueue(callback);
@@ -61,15 +65,15 @@ public class OneNet {
         }
     }
 
-    private void sendIncDe(String title, Boolean privated, okhttp3.Callback callback) {
+    private void incSe(String title, Boolean privated, okhttp3.Callback callback) {
         JSONObject json = new JSONObject();
         try {
             json.put("title", title);
             json.put("private", privated);
-            LogUtil.i(host + devices + " ---- " + json.toString());
+            LogUtil.i(host + sences + " ---- " + json.toString());
             Request request = new Request.Builder()
                     .addHeader(API_KEY_NAME, API_KEY_VALUE)
-                    .url(host + devices)
+                    .url(host + sences)
                     .post(RequestBody.create(JSON, json.toString()))
                     .build();
             client.newCall(request).enqueue(callback);
@@ -79,15 +83,15 @@ public class OneNet {
 
     }
 
-    private void updateDe(String deviceId, String title, Boolean privated, okhttp3.Callback callback) {
+    private void updateSe(String senceId, String title, Boolean privated, okhttp3.Callback callback) {
         JSONObject json = new JSONObject();
         try {
             json.put("title", title);
             json.put("private", privated);
-            LogUtil.i(host + devices + "/" + deviceId + " ---- " + json.toString());
+            LogUtil.i(host + sences + "/" + senceId + " ---- " + json.toString());
             Request request = new Request.Builder()
                     .addHeader(API_KEY_NAME, API_KEY_VALUE)
-                    .url(host + devices + "/" + deviceId)
+                    .url(host + sences + "/" + senceId)
                     .put(RequestBody.create(JSON, json.toString()))
                     .build();
             client.newCall(request).enqueue(callback);
@@ -96,25 +100,45 @@ public class OneNet {
         }
     }
 
-    private void getDe(String deviceId, okhttp3.Callback callback) {
+    private void getSe(String senceId, okhttp3.Callback callback) {
         Request request = new Request.Builder()
                 .addHeader(API_KEY_NAME, API_KEY_VALUE)
-                .url(host + devices + "/" + deviceId)
+                .url(host + sences + "/" + senceId)
                 .get()
                 .build();
         client.newCall(request).enqueue(callback);
     }
-    private void deleteDe(String deviceId, okhttp3.Callback callback) {
+
+    private void deleteSe(String senceId, okhttp3.Callback callback) {
         Request request = new Request.Builder()
                 .addHeader(API_KEY_NAME, API_KEY_VALUE)
-                .url(host + devices + "/" + deviceId)
+                .url(host + sences + "/" + senceId)
                 .delete()
                 .build();
         client.newCall(request).enqueue(callback);
     }
 
-    public void registerDevice(String sn, final String title) {
-        sendRegisterDe(sn, title, new Callback() {
+    private void incDe(String senceName, String deviceName, okhttp3.Callback callback) {
+        JSONObject json = new JSONObject();
+        Sence sence = OperateDB.isHaveInDB(senceName);
+        try {
+            json.put("id", deviceName);
+            json.put("unit", deviceName);
+            LogUtil.i(host + sences + "/" + sence.getSenceId() + devices + " ---- " + json.toString());
+            Request request = new Request.Builder()
+                    .addHeader(API_KEY_NAME, API_KEY_VALUE)
+                    .url(host + sences + "/" + sence.getSenceId() + devices)
+                    .post(RequestBody.create(JSON, json.toString()))
+                    .build();
+            client.newCall(request).enqueue(callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void registerSence(String sn, final String title) {
+        registerSe(sn, title, new Callback() {
             OneNetRegisterDe oneNetRegisterDe;
 
             @Override
@@ -139,8 +163,8 @@ public class OneNet {
         });
     }
 
-    public void incDevice(final String title, Boolean privated) {
-        sendIncDe(title, privated, new Callback() {
+    public void incSence(final String title, Boolean privated) {
+        incSe(title, privated, new Callback() {
             OneNetIncDevice oneNetIncDevice;
 
             @Override
@@ -164,8 +188,8 @@ public class OneNet {
         });
     }
 
-    public void updateDevice(final String deviceId, String title, Boolean privated) {
-        updateDe(deviceId, title, privated, new Callback() {
+    public void updateSence(final String senceId, String title, Boolean privated) {
+        updateSe(senceId, title, privated, new Callback() {
             OneNetErr oneNetErr;
 
             @Override
@@ -180,7 +204,7 @@ public class OneNet {
                 oneNetErr = gson.fromJson(jsonString, OneNetErr.class);
                 if (oneNetErr.errno == 0) {
                     LogUtil.i(oneNetErr.error + "\n");
-                    getDevice(deviceId);
+                    getSence(senceId);
                     //OperateDB.updateSenceId(new Sence(),title,oneNetRegisterDe.data.deviceId);//保存返回的设备id到数据库中的sence
                 } else {
                     LogUtil.i(oneNetErr.error);
@@ -189,8 +213,9 @@ public class OneNet {
             }
         });
     }
-    public void getDevice(String deviceId) {
-        getDe(deviceId,new Callback() {
+
+    public void getSence(String senceId) {
+        getSe(senceId, new Callback() {
             OneNetGetDe oneNetGetDe;
 
             @Override
@@ -218,8 +243,9 @@ public class OneNet {
             }
         });
     }
-    public void deleteDevice(String deviceId) {
-        deleteDe(deviceId,new Callback() {
+
+    public void deleteSence(String deviceId) {
+        deleteSe(deviceId, new Callback() {
             OneNetErr oneNetErr;
 
             @Override
@@ -237,6 +263,30 @@ public class OneNet {
                 } else {
                     LogUtil.i(oneNetErr.error);
                 }
+            }
+        });
+    }
+    public void incDevice(final String senceName, final String deviceName) {
+        incDe(senceName, deviceName, new Callback() {
+            OneNetIncDataStreams oneNetIncDataStreams;
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                oneNetIncDataStreams = null;
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String jsonString = response.body().string();
+                LogUtil.i(jsonString);
+                oneNetIncDataStreams = gson.fromJson(jsonString, OneNetIncDataStreams.class);
+                if (oneNetIncDataStreams.errno == 0) {
+                    LogUtil.i(oneNetIncDataStreams.data.dsUuid + "\n");
+                    OperateDB.updateDeviceId(new Device(), senceName, deviceName,oneNetIncDataStreams.data.dsUuid);//保存返回的设备id到数据库中的sence
+                } else {
+                    LogUtil.i(oneNetIncDataStreams.error);
+                }
+
             }
         });
     }
