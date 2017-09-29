@@ -51,6 +51,7 @@ import com.xth.intelligentassistant.main.ExpandableListFragment;
 import com.xth.intelligentassistant.main.SwipeMenuListFragment;
 import com.xth.intelligentassistant.util.Constant;
 import com.xth.intelligentassistant.util.LogUtil;
+import com.xth.intelligentassistant.wifi.LinkStm32;
 
 import org.litepal.crud.DataSupport;
 
@@ -223,6 +224,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LogUtil.d(memoryClass + "memoryClass");
 
         oneNet = new OneNet();
+
+        LinkStm32 linkStm32 = new LinkStm32(this);
     }
 
     //运行时权限申请授权处理

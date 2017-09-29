@@ -12,6 +12,7 @@ import com.xth.intelligentassistant.gson.OneNetJson.OneNetIncDevice;
 import com.xth.intelligentassistant.gson.OneNetJson.OneNetRegisterDe;
 import com.xth.intelligentassistant.util.LogUtil;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,6 +39,8 @@ public class OneNet {
     private static final String registerCode = "register_code=4s6bBQQb1imhUDQv";
     private static final String sences = "/devices";
     private static final String devices = "/datastreams";
+    private static final String datapoints = "/datapoints";
+    private static final String type3 = "type=3";
     private static final String API_KEY_NAME = "api-key";
     private static final String API_KEY_VALUE = "VJjx0ugy6uTIVVNC2d16Un=elPs=";
 
@@ -182,6 +185,35 @@ public class OneNet {
                 .delete()
                 .build();
         client.newCall(request).enqueue(callback);
+    }
+    private void incDataPo(String senceName,String deviceName,int value, okhttp3.Callback callback) {
+        JSONObject json = new JSONObject();
+        JSONArray datastreamsArray = new JSONArray();
+        JSONObject datastreamsJson = new JSONObject();
+        JSONArray datapointsArray = new JSONArray();
+        JSONObject datapointsJson = new JSONObject();
+        Sence sence = OperateDB.isHaveInDB(senceName);
+        Device device = OperateDB.isHaveInDB(senceName, deviceName);
+
+        try {
+            datapointsJson.put("value",value);
+            datapointsArray.put(datapointsJson);
+            datastreamsJson.put("id",device.getDeviceId());
+            datastreamsJson.put("datapoints",datastreamsArray);
+            datastreamsArray.put(datastreamsJson);
+            json.put("datastreams",datastreamsArray);
+            LogUtil.i(json.toString());
+            LogUtil.i(host + sences+"/"+sence.getSenceId()+datapoints+"?"+type3);
+            Request request = new Request.Builder()
+                    .addHeader(API_KEY_NAME, API_KEY_VALUE)
+                    .url(host + sences+"/"+sence.getSenceId()+datapoints+"?"+type3)
+                    .post(RequestBody.create(JSON, json.toString()))
+                    .build();
+            client.newCall(request).enqueue(callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void registerSence(String sn, final String title) {
@@ -357,6 +389,7 @@ public class OneNet {
                 if (oneNetErr.errno == 0) {
                     OperateDB.updateName(new Device(), senceName, deviceName, newDeviceName);//设备ID即为首次设备名，后续修改设备名设备ID不变
                     getDevice(senceName, newDeviceName);//获取新设备信息
+                    incDataPoints(senceName, newDeviceName,12);
                 } else {
                     LogUtil.i(oneNetErr.error);
                 }
@@ -414,6 +447,29 @@ public class OneNet {
                 } else {
                     LogUtil.i(oneNetErr.error);
                 }
+            }
+        });
+    }
+    public void incDataPoints(String senceName,String deviceName,int value) {
+        incDataPo(senceName, deviceName,value, new Callback() {
+            OneNetErr oneNetErr;
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                oneNetErr = null;
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String jsonString = response.body().string();
+                LogUtil.i(jsonString);
+                oneNetErr = gson.fromJson(jsonString, OneNetErr.class);
+                if (oneNetErr.errno == 0) {
+                    LogUtil.i(oneNetErr.error);
+                } else {
+                    LogUtil.i(oneNetErr.error);
+                }
+
             }
         });
     }
